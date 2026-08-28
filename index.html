@@ -3,281 +3,411 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>반응속도 테스트 — 당신의 반사신경은 몇 급?</title>
-<meta name="description" content="5번의 탭으로 반응속도를 측정하고, 친구에게 도전장을 보내세요. 당신은 치타급? 나무늘보급?">
-<meta property="og:title" content="⚡ 반응속도 테스트 — 반사신경 몇 급?">
-<meta property="og:description" content="5번의 탭으로 측정 끝. 친구에게 도전장을 보내고 단톡방 1등을 가리세요.">
+<title>반응속도 오락실</title>
+<meta name="description" content="레트로 오락실에서 반사신경을 겨루세요. 클래식 5라운드, 페이크에 속지 않기, 서바이벌 모드. 도전장을 보내 단톡방 1등을 가립니다.">
+<meta property="og:title" content="⚡ 반응속도 오락실">
+<meta property="og:description" content="5번의 탭, 페이크, 서바이벌. 도전장을 보내고 단톡방 1등을 가리세요.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sjidok750-creator.github.io/reaction-test/">
 <meta property="og:image" content="https://sjidok750-creator.github.io/reaction-test/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕹️</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css">
+<link rel="stylesheet" href="https://unpkg.com/galmuri/dist/galmuri.css">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body { height:100%; overscroll-behavior:none; }
   body {
-    font-family:-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
-    background:#0f1115; color:#f2f4f8;
-    display:flex; flex-direction:column; align-items:center;
+    font-family:'Galmuri11', 'Galmuri9', -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background:#0a0a12; color:#d8ffe8;
+    display:flex; justify-content:center;
     user-select:none; -webkit-user-select:none;
   }
-  #app { width:100%; max-width:480px; height:100dvh; display:flex; flex-direction:column; padding:16px; }
-  header { text-align:center; padding:8px 0 4px; }
-  header h1 { font-size:1.15rem; font-weight:800; letter-spacing:-0.02em; }
-  header .sub { font-size:0.78rem; color:#8a93a5; margin-top:2px; }
+  /* CRT 스캔라인 */
+  body::after {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:9;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 1px, transparent 1px 3px);
+  }
+  #app { width:100%; max-width:480px; height:100dvh; display:flex; flex-direction:column; padding:14px; position:relative; }
+
+  .marquee {
+    text-align:center; border:2px solid #39ff88; padding:10px 6px 8px; position:relative;
+    box-shadow:0 0 14px rgba(57,255,136,0.25), inset 0 0 14px rgba(57,255,136,0.08);
+  }
+  .marquee h1 { font-size:1.25rem; color:#39ff88; letter-spacing:0.06em; text-shadow:0 0 8px rgba(57,255,136,0.7); }
+  .marquee .sub { font-size:0.68rem; color:#5f8a72; margin-top:4px; letter-spacing:0.1em; }
 
   #challengeBanner {
-    display:none; margin:10px 0 0; padding:10px 14px; border-radius:12px;
-    background:#1c2540; border:1px solid #33406b; font-size:0.9rem; text-align:center; line-height:1.5;
+    display:none; margin-top:10px; padding:9px 10px; border:2px dashed #ff3d81;
+    font-size:0.78rem; text-align:center; line-height:1.7; color:#ffb8d1;
   }
-  #challengeBanner b { color:#ffd166; }
+  #challengeBanner b { color:#ff3d81; }
 
+  .screen { flex:1; display:none; flex-direction:column; min-height:0; margin-top:12px; }
+  .screen.on { display:flex; }
+
+  /* 홈 */
+  .slot {
+    border:2px solid #2b3346; padding:16px 14px; margin-bottom:12px; cursor:pointer; background:#0e1020;
+    box-shadow:4px 4px 0 #000;
+  }
+  .slot:active { transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
+  .slot .name { font-size:1rem; color:#ffe14d; }
+  .slot .desc { font-size:0.72rem; color:#7d879f; margin-top:6px; line-height:1.7; }
+  .slot.s2 .name { color:#6ee7ff; }
+  .homeBest { margin-top:auto; font-size:0.7rem; color:#5a6478; text-align:center; line-height:1.9; }
+  .homeBest b { color:#39ff88; }
+
+  /* 게임 스테이지 */
   #stage {
-    flex:1; margin:14px 0; border-radius:20px; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; text-align:center; cursor:pointer;
-    background:#181c24; border:1px solid #262c38; transition:background 0.08s; padding:24px; min-height:0;
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; cursor:pointer; border:2px solid #2b3346; background:#0e1020;
+    padding:20px; min-height:0; transition:background 0.05s;
   }
-  #stage.waiting { background:#b3364b; border-color:#b3364b; }
-  #stage.ready   { background:#2fb96a; border-color:#2fb96a; }
-  #stage.early   { background:#8a6d1f; border-color:#8a6d1f; }
-  #stage h2 { font-size:1.5rem; font-weight:800; line-height:1.4; letter-spacing:-0.02em; }
-  #stage p  { margin-top:10px; font-size:0.92rem; color:#c7cddb; line-height:1.55; }
-  #stage.waiting p, #stage.ready p, #stage.early p { color:rgba(255,255,255,0.85); }
-  #stage .big { font-size:3.2rem; font-weight:900; margin-bottom:6px; }
-
-  #rounds { font-size:0.8rem; color:#8a93a5; text-align:center; min-height:1.2em; }
-  #rounds span.done { color:#2fb96a; font-weight:700; }
+  #stage.waiting { background:#3d0f1e; border-color:#ff3d81; }
+  #stage.ready   { background:#0e3d24; border-color:#39ff88; }
+  #stage.fake    { background:#101b4d; border-color:#6ee7ff; }
+  #stage.early   { background:#3d2f0f; border-color:#ffe14d; }
+  #stage h2 { font-size:1.3rem; line-height:1.6; color:#eafff2; }
+  #stage .huge { font-size:2.6rem; color:#39ff88; text-shadow:0 0 10px rgba(57,255,136,0.6); }
+  #stage p { margin-top:12px; font-size:0.75rem; color:#8b95ad; line-height:1.9; }
+  #stage.waiting p, #stage.ready p, #stage.fake p, #stage.early p { color:rgba(255,255,255,0.75); }
+  #hud { display:flex; justify-content:space-between; font-size:0.7rem; color:#5a6478; padding:8px 2px 0; min-height:1.6em; }
+  #hud .val { color:#ffe14d; }
 
   /* 결과 */
-  #result { display:none; flex:1; margin:14px 0; overflow-y:auto; }
-  .card { background:#181c24; border:1px solid #262c38; border-radius:20px; padding:22px; text-align:center; }
-  .tierEmoji { font-size:3.4rem; }
-  .tierName { font-size:1.5rem; font-weight:900; margin-top:6px; letter-spacing:-0.02em; }
-  .avgMs { font-size:2.6rem; font-weight:900; margin-top:12px; }
-  .avgMs small { font-size:1.1rem; color:#8a93a5; font-weight:600; }
-  .pct { margin-top:6px; font-size:1rem; color:#ffd166; font-weight:700; }
-  .detail { margin-top:12px; font-size:0.82rem; color:#8a93a5; line-height:1.6; }
-  #verdict { display:none; margin-top:14px; padding:14px; border-radius:14px; font-weight:800; font-size:1.05rem; line-height:1.6; }
-  #verdict.win  { background:#153b27; color:#5ee39a; border:1px solid #1f5c3c; }
-  #verdict.lose { background:#3b1520; color:#ff8fa3; border:1px solid #5c1f30; }
+  #result { overflow-y:auto; }
+  .frame { border:2px solid #39ff88; background:#0e1020; padding:18px 14px; text-align:center; box-shadow:4px 4px 0 #000; }
+  .rankLabel { font-size:0.68rem; color:#5f8a72; letter-spacing:0.2em; }
+  .tierName { font-size:1.6rem; color:#ffe14d; margin-top:8px; text-shadow:0 0 10px rgba(255,225,77,0.5); }
+  .score { font-size:2.4rem; color:#eafff2; margin-top:10px; }
+  .score small { font-size:1rem; color:#7d879f; }
+  .pct { margin-top:8px; font-size:0.85rem; color:#39ff88; line-height:1.7; }
+  .roast { margin-top:12px; font-size:0.78rem; color:#c3cbdd; line-height:1.9; border-top:1px dashed #2b3346; padding-top:12px; }
+  #verdict { display:none; margin-top:12px; padding:12px 10px; font-size:0.85rem; line-height:1.9; border:2px solid; }
+  #verdict.win  { color:#39ff88; border-color:#39ff88; background:rgba(57,255,136,0.06); }
+  #verdict.lose { color:#ff3d81; border-color:#ff3d81; background:rgba(255,61,129,0.06); }
 
   .btn {
-    display:block; width:100%; margin-top:12px; padding:15px; border:none; border-radius:14px;
-    font-size:1rem; font-weight:800; cursor:pointer; font-family:inherit; letter-spacing:-0.01em;
+    display:block; width:100%; margin-top:10px; padding:14px; font-size:0.85rem; cursor:pointer;
+    font-family:inherit; border:2px solid; background:#0e1020; box-shadow:4px 4px 0 #000; letter-spacing:0.04em;
   }
-  .btn-primary { background:#ffd166; color:#1a1a1a; }
-  .btn-ghost { background:#232a37; color:#e6e9f0; }
-  .btn:active { transform:scale(0.98); }
-  #copied { display:none; margin-top:10px; font-size:0.85rem; color:#5ee39a; font-weight:700; text-align:center; }
-
-  #nickWrap { margin-top:14px; display:flex; gap:8px; }
+  .btn:active { transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
+  .btn-y { color:#0a0a12; background:#ffe14d; border-color:#ffe14d; }
+  .btn-g { color:#39ff88; border-color:#39ff88; }
+  .btn-d { color:#7d879f; border-color:#2b3346; }
+  #copied { display:none; margin-top:8px; font-size:0.72rem; color:#39ff88; text-align:center; }
   #nick {
-    flex:1; padding:13px 14px; border-radius:12px; border:1px solid #33406b; background:#12151c;
-    color:#f2f4f8; font-size:0.95rem; font-family:inherit; outline:none;
+    width:100%; margin-top:12px; padding:12px; border:2px solid #2b3346; background:#0a0a12;
+    color:#eafff2; font-size:0.85rem; font-family:inherit; outline:none; text-align:center;
   }
-  footer { text-align:center; font-size:0.72rem; color:#5a6272; padding:6px 0 10px; line-height:1.6; }
+  #nick:focus { border-color:#6ee7ff; }
+  footer { text-align:center; font-size:0.6rem; color:#434c60; padding:8px 0 4px; line-height:1.8; }
+  /* 광고 자리 (애드핏/애드센스 승인 후 활성화) */
+  #adSlot { display:none; margin-top:10px; min-height:50px; }
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <h1>⚡ 반응속도 테스트</h1>
-    <div class="sub">5번의 탭으로 반사신경 등급 측정</div>
-    <div id="challengeBanner">🏆 <b id="chalName"></b>님의 도전장<br><b id="chalMs"></b>ms — 이길 수 있으면 이겨보세요</div>
-  </header>
+  <div class="marquee">
+    <h1>⚡ 반응속도 오락실 ⚡</h1>
+    <div class="sub">INSERT COIN — 아니, 그냥 탭하세요</div>
+  </div>
+  <div id="challengeBanner">💌 <b id="chalName"></b>의 도전장이 도착했다<br><b id="chalScore"></b> — 이기면 자랑, 지면 조용히 재도전</div>
 
-  <div id="stage">
-    <div>
-      <h2 id="stageTitle">시작하려면 탭하세요</h2>
-      <p id="stageDesc">화면이 <b style="color:#ff6b81">빨간색</b>일 땐 기다리고,<br><b style="color:#5ee39a">초록색</b>으로 바뀌는 순간 최대한 빨리 탭!<br>5번 측정한 평균으로 등급이 정해집니다.</p>
+  <!-- 홈: 모드 선택 -->
+  <div class="screen on" id="home">
+    <div class="slot s1" data-mode="classic">
+      <div class="name">▶ 클래식 — 5라운드</div>
+      <div class="desc">초록불에 최대한 빨리 탭. 5회 평균으로 등급 판정.<br>가끔 페이크가 섞인다. 속지 마라.</div>
     </div>
+    <div class="slot s2" data-mode="survival">
+      <div class="name">▶ 서바이벌 — 몇 판까지 버티나</div>
+      <div class="desc">라운드마다 제한시간이 짧아진다.<br>제한시간 안에 못 누르면 그대로 탈락.</div>
+    </div>
+    <div class="homeBest" id="homeBest"></div>
   </div>
 
-  <div id="result">
-    <div class="card">
-      <div class="tierEmoji" id="tierEmoji"></div>
+  <!-- 게임 -->
+  <div class="screen" id="game">
+    <div id="stage"><div><h2 id="stageTitle"></h2><p id="stageDesc"></p></div></div>
+    <div id="hud"><span id="hudLeft"></span><span id="hudRight"></span></div>
+  </div>
+
+  <!-- 결과 -->
+  <div class="screen" id="result">
+    <div class="frame">
+      <div class="rankLabel">— 판정 결과 —</div>
       <div class="tierName" id="tierName"></div>
-      <div class="avgMs"><span id="avgMs"></span><small> ms</small></div>
+      <div class="score"><span id="scoreMain"></span><small id="scoreUnit"></small></div>
       <div class="pct" id="pct"></div>
-      <div class="detail" id="detail"></div>
+      <div class="roast" id="roast"></div>
       <div id="verdict"></div>
-      <div id="nickWrap">
-        <input id="nick" maxlength="10" placeholder="닉네임 (도전장에 표시)">
-      </div>
-      <button class="btn btn-primary" id="shareBtn">🏆 도전장 보내기</button>
-      <div id="copied">✅ 복사 완료! 단톡방에 붙여넣으세요</div>
-      <button class="btn btn-ghost" id="retryBtn">다시 도전</button>
+      <input id="nick" maxlength="10" placeholder="도전장에 새길 이름">
+      <button class="btn btn-y" id="shareBtn">💌 도전장 보내기</button>
+      <div id="copied">복사 완료 — 단톡방에 붙여넣으면 전쟁 시작</div>
+      <button class="btn btn-g" id="retryBtn">한 판 더</button>
+      <button class="btn btn-d" id="homeBtn">모드 선택으로</button>
     </div>
+    <div id="adSlot"></div>
   </div>
 
-  <div id="rounds"></div>
-  <footer>내 최고 기록: <span id="bestEver">—</span> · 백분위는 성인 터치 반응속도 분포 기반 추정치</footer>
+  <footer>기록은 이 기기에만 저장 · 백분위는 성인 터치 반응 분포 추정치</footer>
 </div>
 
 <script>
 (function(){
-  var TOTAL = 5;
-  var stage = document.getElementById('stage');
-  var stageTitle = document.getElementById('stageTitle');
-  var stageDesc = document.getElementById('stageDesc');
-  var roundsEl = document.getElementById('rounds');
-  var resultEl = document.getElementById('result');
+  var $ = function(id){ return document.getElementById(id); };
+  var stage=$('stage'), stageTitle=$('stageTitle'), stageDesc=$('stageDesc');
+  var screens={home:$('home'),game:$('game'),result:$('result')};
+  function show(name){ for(var k in screens) screens[k].classList.toggle('on', k===name); }
 
-  var state = 'idle'; // idle | waiting | ready | early | between | done
-  var round = 0, times = [], readyAt = 0, timer = null;
+  var mode='classic', state='idle', timer=null, deadline=null, readyAt=0;
+  var round=0, times=[], survived=0, limit=0;
+  var TOTAL=5, FAKE_CHANCE=0.45;
+  var SURV_START=480, SURV_STEP=28, SURV_MIN=180;
 
-  // 도전장 파싱
-  var params = new URLSearchParams(location.search);
-  var chal = null;
-  var cMs = parseInt(params.get('c'), 10);
-  if (!isNaN(cMs) && cMs > 80 && cMs < 2000) {
-    chal = { ms: cMs, name: (params.get('n') || '친구').slice(0, 10) };
-    document.getElementById('chalName').textContent = chal.name;
-    document.getElementById('chalMs').textContent = chal.ms;
-    document.getElementById('challengeBanner').style.display = 'block';
+  // ---- 도전장 파싱 ----
+  var q=new URLSearchParams(location.search), chal=null;
+  var cV=parseInt(q.get('c'),10), cM=q.get('m')==='s'?'survival':'classic';
+  if(!isNaN(cV)&&cV>0&&cV<3000){
+    chal={v:cV,mode:cM,name:(q.get('n')||'익명의 도전자').slice(0,10)};
+    $('chalName').textContent=chal.name;
+    $('chalScore').textContent= cM==='survival' ? ('서바이벌 '+cV+'라운드 생존') : (cV+'ms');
+    $('challengeBanner').style.display='block';
   }
 
-  var TIERS = [
-    { max: 180, emoji: '⚡', name: '번개급' },
-    { max: 210, emoji: '🐆', name: '치타급' },
-    { max: 240, emoji: '🐱', name: '고양이급' },
-    { max: 280, emoji: '🧍', name: '보통 사람' },
-    { max: 330, emoji: '🐢', name: '거북이급' },
-    { max: 1e9, emoji: '🦥', name: '나무늘보급' }
+  // ---- 등급/멘트 ----
+  var TIERS=[
+    {max:180,name:'⚡ 프로게이머의 영역',roasts:['이 기록, 부모님은 아십니까. 자랑하십시오.','e스포츠 구단 입단 테스트 알아보시죠.']},
+    {max:210,name:'🐆 치타',roasts:['동물의 왕국에서 스카웃 제의가 올 수 있습니다.','친구들이 같이 게임하기 싫어하는 유형.']},
+    {max:240,name:'🐱 고양이',roasts:['츄르 앞의 고양이 수준. 준수합니다.','단톡방 상위권은 확보했습니다.']},
+    {max:280,name:'🧑 평범한 인간',roasts:['지극히 정상입니다. 정상이 제일 무섭죠.','여기서 20ms만 줄이면 인생이 달라집니다. 아마도.']},
+    {max:330,name:'🐢 거북이',roasts:['느리지만 오래 삽니다. 위안이 되길.','초록불 보고 잠깐 생각을 하셨죠? 하지 마세요.']},
+    {max:1e9,name:'🦥 나무늘보',roasts:['혹시… 발로 하셨습니까?','택배가 더 빨리 도착합니다. 재도전 권장.']}
   ];
-  function tierOf(ms){ for (var i=0;i<TIERS.length;i++) if (ms <= TIERS[i].max) return TIERS[i]; }
-
-  // 상위 % 추정: 터치 반응속도 정규분포 근사 (평균 270ms, 표준편차 45)
+  var SURV_TIERS=[
+    {min:13,name:'👑 오락실의 제왕',roasts:['기계가 당신을 두려워합니다.']},
+    {min:9,name:'🔥 아케이드 고인물',roasts:['동전 하나로 하루 버티던 그 시절 실력.']},
+    {min:5,name:'🎮 게이머',roasts:['나쁘지 않네요. 근데 친구는 몇 판일까요?']},
+    {min:0,name:'🐣 연습생',roasts:['제한시간이 야속했나요? 다시 갑시다.']}
+  ];
+  function tierOf(ms){for(var i=0;i<TIERS.length;i++)if(ms<=TIERS[i].max)return TIERS[i];}
+  function survTierOf(n){for(var i=0;i<SURV_TIERS.length;i++)if(n>=SURV_TIERS[i].min)return SURV_TIERS[i];}
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function topPct(ms){
-    var z = (ms - 270) / 45;
-    var t = 1 / (1 + 0.2316419 * Math.abs(z));
-    var d = 0.3989423 * Math.exp(-z*z/2);
-    var p = d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
-    var cdf = z > 0 ? 1 - p : p; // 나보다 빠른 사람 비율
-    return Math.min(99, Math.max(0.1, cdf * 100));
+    var z=(ms-270)/45,t=1/(1+0.2316419*Math.abs(z)),d=0.3989423*Math.exp(-z*z/2);
+    var p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+    var cdf=z>0?1-p:p; return Math.min(99,Math.max(0.1,cdf*100));
   }
 
-  function renderRounds(){
-    var html = '';
-    for (var i=0;i<TOTAL;i++){
-      html += i < times.length ? '<span class="done">' + times[i] + 'ms</span>' : '<span>·</span>';
-      if (i < TOTAL-1) html += ' &nbsp; ';
-    }
-    roundsEl.innerHTML = html;
+  // ---- 저장 ----
+  function store(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  function renderHomeBest(){
+    var b=load('bestAvg'), s=load('bestSurv');
+    $('homeBest').innerHTML='내 최고 기록<br>클래식 <b>'+(b?b+'ms':'—')+'</b> · 서바이벌 <b>'+(s?s+'라운드':'—')+'</b>';
   }
 
-  function startRound(){
-    state = 'waiting';
-    stage.className = 'waiting';
-    stageTitle.textContent = '기다리세요…';
-    stageDesc.innerHTML = '초록색으로 바뀌면 탭! (' + (round+1) + ' / ' + TOTAL + ')';
-    timer = setTimeout(function(){
-      state = 'ready';
-      stage.className = 'ready';
-      stageTitle.textContent = '지금 탭!';
-      stageDesc.textContent = '';
-      readyAt = performance.now();
-    }, 1000 + Math.random()*2200);
-  }
-
-  function finish(){
-    state = 'done';
-    var avg = Math.round(times.reduce(function(a,b){return a+b;},0) / times.length);
-    var best = Math.min.apply(null, times);
-    var t = tierOf(avg), pct = topPct(avg);
-
-    stage.style.display = 'none';
-    resultEl.style.display = 'block';
-    document.getElementById('tierEmoji').textContent = t.emoji;
-    document.getElementById('tierName').textContent = t.name;
-    document.getElementById('avgMs').textContent = avg;
-    document.getElementById('pct').textContent = '상위 ' + (pct < 1 ? pct.toFixed(1) : Math.round(pct)) + '%';
-    document.getElementById('detail').textContent = '최고 ' + best + 'ms · 5회 평균 기준';
-
-    try {
-      var prev = parseInt(localStorage.getItem('bestAvg'), 10);
-      if (isNaN(prev) || avg < prev) localStorage.setItem('bestAvg', avg);
-      document.getElementById('bestEver').textContent = localStorage.getItem('bestAvg') + 'ms';
-      var savedNick = localStorage.getItem('nick');
-      if (savedNick) document.getElementById('nick').value = savedNick;
-    } catch(e){}
-
-    var v = document.getElementById('verdict');
-    if (chal) {
-      v.style.display = 'block';
-      if (avg < chal.ms) {
-        v.className = 'win';
-        v.innerHTML = '🎉 승리! ' + avg + 'ms vs ' + chal.ms + 'ms<br>' + chal.name + '님을 ' + (chal.ms - avg) + 'ms 차이로 이겼습니다';
-      } else if (avg > chal.ms) {
-        v.className = 'lose';
-        v.innerHTML = '😭 패배… ' + avg + 'ms vs ' + chal.ms + 'ms<br>다시 도전해서 설욕하세요';
-      } else {
-        v.className = 'win';
-        v.textContent = '🤝 무승부! ' + avg + 'ms';
-      }
-    }
-    window.__avg = avg;
-  }
-
-  function onTap(){
-    if (state === 'idle' || state === 'between') { startRound(); return; }
-    if (state === 'waiting') {
-      clearTimeout(timer);
-      state = 'early';
-      stage.className = 'early';
-      stageTitle.textContent = '너무 빨랐어요! 🫢';
-      stageDesc.textContent = '초록색이 되기 전에 탭했습니다. 탭해서 이 라운드 다시 시작';
-      state = 'between';
-      return;
-    }
-    if (state === 'ready') {
-      var ms = Math.round(performance.now() - readyAt);
-      times.push(ms); round++;
-      renderRounds();
-      if (round >= TOTAL) { finish(); return; }
-      state = 'between';
-      stage.className = '';
-      stageTitle.textContent = ms + 'ms!';
-      stageDesc.textContent = '탭해서 다음 라운드 (' + (round+1) + ' / ' + TOTAL + ')';
-      return;
-    }
-  }
-  stage.addEventListener('pointerdown', onTap);
-
-  document.getElementById('retryBtn').addEventListener('click', function(){
-    round = 0; times = []; renderRounds();
-    resultEl.style.display = 'none';
-    stage.style.display = 'flex';
-    stage.className = '';
-    startRound();
-  });
-
-  document.getElementById('shareBtn').addEventListener('click', function(){
-    var avg = window.__avg;
-    var nick = (document.getElementById('nick').value.trim() || '익명').slice(0,10);
-    try { localStorage.setItem('nick', nick); } catch(e){}
-    var url = location.origin + location.pathname + '?c=' + avg + '&n=' + encodeURIComponent(nick);
-    var t = tierOf(avg), pct = topPct(avg);
-    var text = '⚡ ' + nick + '의 반응속도: ' + avg + 'ms (' + t.emoji + ' ' + t.name + ', 상위 ' + (pct < 1 ? pct.toFixed(1) : Math.round(pct)) + '%)\n이길 수 있으면 이겨보세요 👇\n' + url;
-    if (navigator.share) {
-      navigator.share({ text: text }).catch(function(){});
+  // ---- 클래식 ----
+  function classicRound(){
+    state='waiting'; stage.className='waiting';
+    stageTitle.textContent='기다려…';
+    stageDesc.textContent='초록불에만 반응하라 ('+(round+1)+'/'+TOTAL+')';
+    var wait=900+Math.random()*2100;
+    var doFake = Math.random()<FAKE_CHANCE && wait>1500;
+    if(doFake){
+      timer=setTimeout(function(){
+        if(state!=='waiting')return;
+        state='fakeShow'; stage.className='fake';
+        stageTitle.textContent='아직이다!!';
+        stageDesc.textContent='파란불은 페이크. 누르면 무효.';
+        timer=setTimeout(function(){
+          if(state!=='fakeShow')return;
+          state='waiting'; stage.className='waiting';
+          stageTitle.textContent='기다려…'; stageDesc.textContent='잘 참았다. 초록불을 노려라.';
+          timer=setTimeout(green, 500+Math.random()*1200);
+        }, 550);
+      }, wait*0.5);
     } else {
-      var ta = document.createElement('textarea');
-      ta.value = text; document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); } catch(e){}
-      document.body.removeChild(ta);
-      if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function(){});
-      document.getElementById('copied').style.display = 'block';
-      setTimeout(function(){ document.getElementById('copied').style.display = 'none'; }, 2500);
+      timer=setTimeout(green, wait);
+    }
+  }
+  function green(){
+    state='ready'; stage.className='ready';
+    stageTitle.innerHTML='<span class="huge">지금!!</span>'; stageDesc.textContent='';
+    readyAt=performance.now();
+  }
+  function classicDone(){
+    var avg=Math.round(times.reduce(function(a,b){return a+b;},0)/times.length);
+    var best=Math.min.apply(null,times);
+    var t=tierOf(avg), pct=topPct(avg);
+    var prev=parseInt(load('bestAvg'),10);
+    if(isNaN(prev)||avg<prev) store('bestAvg',avg);
+    showResult({
+      tier:t.name, main:avg, unit:' ms',
+      pct:'상위 '+(pct<1?pct.toFixed(1):Math.round(pct))+'%',
+      roast:pick(t.roasts)+'<br>최고 '+best+'ms · 5회 평균 기준',
+      shareV:avg, shareM:'c',
+      shareText:function(nick,url){
+        return '🕹️ '+nick+'의 반응속도: '+avg+'ms ('+t.name+', 상위 '+(pct<1?pct.toFixed(1):Math.round(pct))+'%)\n이길 수 있으면 이겨보시지 👇\n'+url;
+      },
+      verdict: chal&&chal.mode==='classic' ? (avg<chal.v?'win':(avg>chal.v?'lose':'draw')) : null,
+      verdictText: chal ? {
+        win:'🏆 승리! '+avg+'ms vs '+chal.v+'ms<br>'+chal.name+'을(를) '+(chal.v-avg)+'ms 차로 제압',
+        lose:'💀 패배… '+avg+'ms vs '+chal.v+'ms<br>조용히 한 판 더 하고 오자',
+        draw:'🤝 무승부. 이런 확률이?'
+      } : null
+    });
+  }
+
+  // ---- 서바이벌 ----
+  function survRound(){
+    state='waiting'; stage.className='waiting';
+    stageTitle.textContent='기다려…';
+    stageDesc.textContent='제한시간 '+limit+'ms 안에 눌러야 생존';
+    $('hudLeft').textContent='라운드 '+(survived+1);
+    $('hudRight').innerHTML='제한 <span class="val">'+limit+'ms</span>';
+    var goGreen=function(){
+      state='ready'; stage.className='ready';
+      stageTitle.innerHTML='<span class="huge">지금!!</span>'; stageDesc.textContent='';
+      readyAt=performance.now();
+      deadline=setTimeout(function(){
+        if(state==='ready') survDie('시간 초과… '+limit+'ms는 넘길 수 없는 벽이었다');
+      }, limit+40);
+    };
+    var wait=800+Math.random()*1800;
+    if(Math.random()<0.3 && wait>1300){
+      timer=setTimeout(function(){
+        if(state!=='waiting')return;
+        state='fakeShow'; stage.className='fake';
+        stageTitle.textContent='아직이다!!';
+        stageDesc.textContent='파란불에 손대면 즉사.';
+        timer=setTimeout(function(){
+          if(state!=='fakeShow')return;
+          state='waiting'; stage.className='waiting';
+          stageTitle.textContent='기다려…'; stageDesc.textContent='잘 참았다.';
+          timer=setTimeout(goGreen, 400+Math.random()*1000);
+        }, 550);
+      }, wait*0.5);
+    } else {
+      timer=setTimeout(goGreen, wait);
+    }
+  }
+  function survDie(msg){
+    clearTimeout(timer); clearTimeout(deadline); state='done';
+    var t=survTierOf(survived);
+    var prev=parseInt(load('bestSurv'),10);
+    if(isNaN(prev)||survived>prev) store('bestSurv',survived);
+    showResult({
+      tier:t.name, main:survived, unit:' 라운드 생존',
+      pct:msg, roast:pick(t.roasts),
+      shareV:survived, shareM:'s',
+      shareText:function(nick,url){
+        return '🕹️ '+nick+', 서바이벌 '+survived+'라운드 생존 ('+t.name+')\n나보다 오래 버티면 인정 👇\n'+url;
+      },
+      verdict: chal&&chal.mode==='survival' ? (survived>chal.v?'win':(survived<chal.v?'lose':'draw')) : null,
+      verdictText: chal ? {
+        win:'🏆 승리! '+survived+' vs '+chal.v+'라운드',
+        lose:'💀 패배… '+survived+' vs '+chal.v+'라운드',
+        draw:'🤝 무승부. 다시 가서 결판을 내자'
+      } : null
+    });
+  }
+
+  // ---- 결과 표시/공유 ----
+  var shareCtx=null;
+  function showResult(o){
+    state='done'; show('result');
+    $('tierName').textContent=o.tier;
+    $('scoreMain').textContent=o.main; $('scoreUnit').textContent=o.unit;
+    $('pct').textContent=o.pct; $('roast').innerHTML=o.roast;
+    var v=$('verdict');
+    if(o.verdict){ v.style.display='block'; v.className=o.verdict==='lose'?'lose':'win'; v.innerHTML=o.verdictText[o.verdict]; }
+    else v.style.display='none';
+    var savedNick=load('nick'); if(savedNick)$('nick').value=savedNick;
+    shareCtx=o; renderHomeBest();
+  }
+  $('shareBtn').addEventListener('click',function(){
+    if(!shareCtx)return;
+    var nick=($('nick').value.trim()||'익명').slice(0,10); store('nick',nick);
+    var url=location.origin+location.pathname+'?c='+shareCtx.shareV+'&m='+shareCtx.shareM+'&n='+encodeURIComponent(nick);
+    var text=shareCtx.shareText(nick,url);
+    if(navigator.share){ navigator.share({text:text}).catch(function(){}); }
+    else{
+      if(navigator.clipboard) navigator.clipboard.writeText(text).catch(function(){});
+      var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+      ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta);
+      $('copied').style.display='block';
+      setTimeout(function(){$('copied').style.display='none';},2500);
     }
   });
 
-  try {
-    var b = localStorage.getItem('bestAvg');
-    if (b) document.getElementById('bestEver').textContent = b + 'ms';
-  } catch(e){}
-  renderRounds();
+  // ---- 입력 ----
+  stage.addEventListener('pointerdown',function(){
+    if(state==='between'){ mode==='classic'?classicRound():survRound(); return; }
+    if(state==='fakeShow'){
+      clearTimeout(timer);
+      if(mode==='survival'){ survDie('페이크에 당했다… 파란불은 함정이다'); return; }
+      state='between'; stage.className='early';
+      stageTitle.textContent='페이크에 당했다 🫢';
+      stageDesc.textContent='파란불은 함정. 탭해서 이 라운드 재시작';
+      return;
+    }
+    if(state==='waiting'){
+      clearTimeout(timer);
+      if(mode==='survival'){ survDie('너무 성급했다… 초록불이 뜨기 전이었다'); return; }
+      state='between'; stage.className='early';
+      stageTitle.textContent='성급했다!';
+      stageDesc.textContent='초록불 전이었다. 탭해서 이 라운드 재시작';
+      return;
+    }
+    if(state==='ready'){
+      var ms=Math.round(performance.now()-readyAt);
+      if(mode==='survival'){
+        clearTimeout(deadline);
+        if(ms<=limit){
+          survived++; limit=Math.max(SURV_MIN, limit-SURV_STEP);
+          state='between'; stage.className='';
+          stageTitle.textContent=ms+'ms — 생존';
+          stageDesc.textContent='탭해서 다음 라운드. 제한시간은 '+limit+'ms로 줄어든다';
+        } else {
+          survDie(ms+'ms… '+limit+'ms 제한을 넘겼다');
+        }
+        return;
+      }
+      times.push(ms); round++;
+      $('hudLeft').textContent='기록: '+times.join(' · ');
+      if(round>=TOTAL){ classicDone(); return; }
+      state='between'; stage.className='';
+      stageTitle.textContent=ms+'ms';
+      stageDesc.textContent='탭해서 다음 라운드 ('+(round+1)+'/'+TOTAL+')';
+    }
+  });
+
+  // ---- 시작/이동 ----
+  function startGame(m){
+    mode=m; round=0; times=[]; survived=0; limit=SURV_START;
+    $('hudLeft').textContent=''; $('hudRight').textContent='';
+    show('game'); state='between'; stage.className='';
+    if(m==='classic'){
+      stageTitle.textContent='클래식 5라운드';
+      stageDesc.innerHTML='초록불 = 탭 / 파란불 = 페이크, 참아라<br>탭해서 시작';
+    } else {
+      stageTitle.textContent='서바이벌';
+      stageDesc.innerHTML='제한시간 '+SURV_START+'ms에서 시작, 라운드마다 감소<br>페이크·조기 탭 = 즉사. 탭해서 시작';
+    }
+  }
+  document.querySelectorAll('.slot').forEach(function(el){
+    el.addEventListener('click',function(){ startGame(el.dataset.mode); });
+  });
+  $('retryBtn').addEventListener('click',function(){ startGame(mode); });
+  $('homeBtn').addEventListener('click',function(){ show('home'); renderHomeBest(); });
+
+  // 도전장 타고 왔으면 해당 모드로 바로 입장
+  renderHomeBest();
+  if(chal) startGame(chal.mode);
 })();
 </script>
 </body>
