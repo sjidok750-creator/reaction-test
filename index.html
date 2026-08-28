@@ -47,6 +47,27 @@
   .screen { flex:1; display:none; flex-direction:column; min-height:0; margin-top:12px; }
   .screen.on { display:flex; }
 
+  /* 홈: 3초 규칙 설명 */
+  .howto {
+    display:flex; align-items:stretch; gap:6px; margin-bottom:12px;
+  }
+  .how {
+    flex:1; border:2px solid; padding:10px 4px; text-align:center;
+    font-size:0.62rem; line-height:1.8; color:#c3cbdd;
+  }
+  .how b { font-size:0.74rem; }
+  .how .lamp { display:block; width:14px; height:14px; margin:0 auto 6px; border-radius:50%; }
+  .how.red   { border-color:#ff3d81; background:rgba(255,61,129,0.08); }
+  .how.red .lamp { background:#ff3d81; box-shadow:0 0 8px #ff3d81; }
+  .how.red b { color:#ff8fb1; }
+  .how.green { border-color:#39ff88; background:rgba(57,255,136,0.08); }
+  .how.green .lamp { background:#39ff88; box-shadow:0 0 8px #39ff88; }
+  .how.green b { color:#39ff88; }
+  .how.blue  { border-color:#6ee7ff; background:rgba(110,231,255,0.08); }
+  .how.blue .lamp { background:#6ee7ff; box-shadow:0 0 8px #6ee7ff; }
+  .how.blue b { color:#6ee7ff; }
+  .arrow { align-self:center; color:#434c60; font-size:0.7rem; }
+
   /* 홈 */
   .slot {
     border:2px solid #2b3346; padding:16px 14px; margin-bottom:12px; cursor:pointer; background:#0e1020;
@@ -118,6 +139,13 @@
 
   <!-- 홈: 모드 선택 -->
   <div class="screen on" id="home">
+    <div class="howto">
+      <div class="how red"><span class="lamp"></span>빨간불<br><b>기다려</b></div>
+      <div class="arrow">▶</div>
+      <div class="how green"><span class="lamp"></span>초록불<br><b>빨리 탭!</b></div>
+      <div class="arrow">▶</div>
+      <div class="how blue"><span class="lamp"></span>파란불<br><b>페이크, 참아</b></div>
+    </div>
     <div class="slot s1" data-mode="classic">
       <div class="name">▶ 클래식 — 5라운드</div>
       <div class="desc">초록불에 최대한 빨리 탭. 5회 평균으로 등급 판정.<br>가끔 페이크가 섞인다. 속지 마라.</div>
@@ -391,12 +419,13 @@
     mode=m; round=0; times=[]; survived=0; limit=SURV_START;
     $('hudLeft').textContent=''; $('hudRight').textContent='';
     show('game'); state='between'; stage.className='';
+    var legend='<b style="color:#ff3d81">● 빨간불</b> 기다려 → <b style="color:#39ff88">● 초록불</b> 빨리 탭! → <b style="color:#6ee7ff">● 파란불</b> 페이크, 참아';
     if(m==='classic'){
       stageTitle.textContent='클래식 5라운드';
-      stageDesc.innerHTML='초록불 = 탭 / 파란불 = 페이크, 참아라<br>탭해서 시작';
+      stageDesc.innerHTML=legend+'<br><br>화면 아무 데나 탭하면 시작';
     } else {
       stageTitle.textContent='서바이벌';
-      stageDesc.innerHTML='제한시간 '+SURV_START+'ms에서 시작, 라운드마다 감소<br>페이크·조기 탭 = 즉사. 탭해서 시작';
+      stageDesc.innerHTML=legend+'<br>라운드마다 제한시간이 짧아진다. 못 누르면 탈락<br><br>화면 아무 데나 탭하면 시작';
     }
   }
   document.querySelectorAll('.slot').forEach(function(el){
