@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>반응속도 오락실</title>
-<meta name="description" content="레트로 오락실에서 반사신경을 겨루세요. 클래식 5라운드, 페이크에 속지 않기, 서바이벌 모드. 도전장을 보내 단톡방 1등을 가립니다.">
+<meta name="description" content="라운드마다 짧아지는 제한시간, 페이크에 속지 않기. 몇 라운드까지 버티나. 도전장을 보내 단톡방 1등을 가립니다.">
 <meta property="og:title" content="⚡ 반응속도 오락실">
-<meta property="og:description" content="5번의 탭, 페이크, 서바이벌. 도전장을 보내고 단톡방 1등을 가리세요.">
+<meta property="og:description" content="제한시간은 점점 짧아진다. 몇 라운드까지 버티나 — 도전장을 보내고 단톡방 1등을 가리세요.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sjidok750-creator.github.io/reaction-test/">
 <meta property="og:image" content="https://sjidok750-creator.github.io/reaction-test/og.png">
@@ -158,13 +158,9 @@
       <div class="arrow">▶</div>
       <div class="how blue"><span class="lamp"></span>파란불<br><b>페이크, 참아</b></div>
     </div>
-    <div class="slot s1" data-mode="classic">
-      <div class="name">▶ 클래식 — 5라운드</div>
-      <div class="desc">초록불에 최대한 빨리 탭. 5회 평균으로 등급 판정.<br>가끔 페이크가 섞인다. 속지 마라.</div>
-    </div>
-    <div class="slot s2" data-mode="survival">
-      <div class="name">▶ 서바이벌 — 몇 판까지 버티나</div>
-      <div class="desc">라운드마다 제한시간이 짧아진다.<br>제한시간 안에 못 누르면 그대로 탈락.</div>
+    <div class="slot s1" id="startSlot">
+      <div class="name">▶ 게임 시작</div>
+      <div class="desc">라운드마다 제한시간이 짧아진다.<br>제한시간 안에 못 누르면 탈락. 몇 라운드까지 버티나.</div>
     </div>
     <div class="homeBest" id="homeBest"></div>
   </div>
@@ -186,8 +182,8 @@
       <div id="verdict"></div>
       <input id="nick" maxlength="10" placeholder="이름을 넣어야 자랑이 완성된다">
       <div id="nickWarn">↑ 이름부터! 누가 세운 기록인지 알려야지</div>
-      <button class="btn btn-y" id="shareBtn">💌 도전장 보내기</button>
-      <button class="btn btn-p" id="bragBtn">📸 기록 카드로 자랑하기</button>
+      <button class="btn btn-y" id="shareBtn">도전장 보내기</button>
+      <button class="btn btn-p" id="bragBtn">기록 보내기</button>
       <div id="copied">복사 완료 — 단톡방에 붙여넣으면 전쟁 시작</div>
       <button class="btn btn-g" id="retryBtn">한 판 더</button>
       <button class="btn btn-d" id="homeBtn">모드 선택으로</button>
@@ -214,37 +210,27 @@
   var screens={home:$('home'),game:$('game'),result:$('result')};
   function show(name){ for(var k in screens) screens[k].classList.toggle('on', k===name); }
 
-  var mode='classic', state='idle', timer=null, deadline=null, readyAt=0;
-  var round=0, times=[], survived=0, limit=0;
-  var TOTAL=5, FAKE_CHANCE=0.45;
-  var SURV_START=600, SURV_STEP=30, SURV_MIN=180;
+  var state='idle', timer=null, deadline=null, readyAt=0;
+  var survived=0, limit=0, times=[];
+  var SURV_START=600, SURV_STEP=30, SURV_MIN=180, FAKE_CHANCE=0.3;
 
-  // ---- 도전장 파싱 ----
+  // ---- 도전장 파싱 (서바이벌 라운드 기록) ----
   var q=new URLSearchParams(location.search), chal=null;
-  var cV=parseInt(q.get('c'),10), cM=q.get('m')==='s'?'survival':'classic';
-  if(!isNaN(cV)&&cV>0&&cV<3000){
-    chal={v:cV,mode:cM,name:(q.get('n')||'익명의 도전자').slice(0,10)};
+  var cV=parseInt(q.get('c'),10);
+  if(!isNaN(cV) && cV>0 && cV<200 && q.get('m')==='s'){
+    chal={v:cV, name:(q.get('n')||'익명의 도전자').slice(0,10)};
     $('chalName').textContent=chal.name;
-    $('chalScore').textContent= cM==='survival' ? ('서바이벌 '+cV+'라운드 생존') : (cV+'ms');
+    $('chalScore').textContent=chal.v+'라운드 생존';
     $('challengeBanner').style.display='block';
   }
 
   // ---- 등급/멘트 ----
-  var TIERS=[
-    {max:180,name:'⚡ 프로게이머의 영역',roasts:['이 기록, 부모님은 아십니까. 자랑하십시오.','e스포츠 구단 입단 테스트 알아보시죠.']},
-    {max:210,name:'🐆 치타',roasts:['동물의 왕국에서 스카웃 제의가 올 수 있습니다.','친구들이 같이 게임하기 싫어하는 유형.']},
-    {max:240,name:'🐱 고양이',roasts:['츄르 앞의 고양이 수준. 준수합니다.','단톡방 상위권은 확보했습니다.']},
-    {max:280,name:'🧑 평범한 인간',roasts:['지극히 정상입니다. 정상이 제일 무섭죠.','여기서 20ms만 줄이면 인생이 달라집니다. 아마도.']},
-    {max:330,name:'🐢 거북이',roasts:['느리지만 오래 삽니다. 위안이 되길.','초록불 보고 잠깐 생각을 하셨죠? 하지 마세요.']},
-    {max:1e9,name:'🦥 나무늘보',roasts:['혹시… 발로 하셨습니까?','택배가 더 빨리 도착합니다. 재도전 권장.']}
-  ];
   var SURV_TIERS=[
-    {min:13,name:'👑 오락실의 제왕',roasts:['기계가 당신을 두려워합니다.']},
-    {min:9,name:'🔥 아케이드 고인물',roasts:['동전 하나로 하루 버티던 그 시절 실력.']},
-    {min:5,name:'🎮 게이머',roasts:['나쁘지 않네요. 근데 친구는 몇 판일까요?']},
-    {min:0,name:'🐣 연습생',roasts:['제한시간이 야속했나요? 다시 갑시다.']}
+    {min:13,name:'오락실의 제왕',roasts:['기계가 당신을 두려워합니다.','이 기록은 좀 무섭습니다.']},
+    {min:9,name:'아케이드 고인물',roasts:['동전 하나로 하루 버티던 그 시절 실력.','반사신경에 세금을 매겨야 할 수준.']},
+    {min:5,name:'게이머',roasts:['나쁘지 않네요. 근데 친구는 몇 라운드일까요?','상위권이 눈앞입니다. 한 판 더.']},
+    {min:0,name:'연습생',roasts:['제한시간이 야속했나요? 다시 갑시다.','아직 몸이 덜 풀렸을 뿐입니다. 아마도.']}
   ];
-  function tierOf(ms){for(var i=0;i<TIERS.length;i++)if(ms<=TIERS[i].max)return TIERS[i];}
   function survTierOf(n){for(var i=0;i<SURV_TIERS.length;i++)if(n>=SURV_TIERS[i].min)return SURV_TIERS[i];}
   function pick(a){return a[Math.floor(Math.random()*a.length)];}
   function topPct(ms){
@@ -257,63 +243,11 @@
   function store(k,v){try{localStorage.setItem(k,v);}catch(e){}}
   function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function renderHomeBest(){
-    var b=load('bestAvg'), s=load('bestSurv');
-    $('homeBest').innerHTML='내 최고 기록<br>클래식 <b>'+(b?b+'ms':'—')+'</b> · 서바이벌 <b>'+(s?s+'라운드':'—')+'</b>';
+    var s=load('bestSurv'), a=load('bestAvg');
+    $('homeBest').innerHTML='내 최고 기록: <b>'+(s?s+'라운드':'—')+'</b>'+(a?' · 평균 반응 <b>'+a+'ms</b>':'');
   }
 
-  // ---- 클래식 ----
-  function classicRound(){
-    state='waiting'; stage.className='waiting';
-    stageTitle.textContent='기다려…';
-    stageDesc.textContent='초록불에만 반응하라 ('+(round+1)+'/'+TOTAL+')';
-    var wait=900+Math.random()*2100;
-    var doFake = Math.random()<FAKE_CHANCE && wait>1500;
-    if(doFake){
-      timer=setTimeout(function(){
-        if(state!=='waiting')return;
-        state='fakeShow'; stage.className='fake';
-        stageTitle.textContent='아직이다!!';
-        stageDesc.textContent='파란불은 페이크. 누르면 무효.';
-        timer=setTimeout(function(){
-          if(state!=='fakeShow')return;
-          state='waiting'; stage.className='waiting';
-          stageTitle.textContent='기다려…'; stageDesc.textContent='잘 참았다. 초록불을 노려라.';
-          timer=setTimeout(green, 500+Math.random()*1200);
-        }, 550);
-      }, wait*0.5);
-    } else {
-      timer=setTimeout(green, wait);
-    }
-  }
-  function green(){
-    state='ready'; stage.className='ready';
-    stageTitle.innerHTML='<span class="huge">지금!!</span>'; stageDesc.textContent='';
-    readyAt=performance.now();
-  }
-  function classicDone(){
-    var avg=Math.round(times.reduce(function(a,b){return a+b;},0)/times.length);
-    var best=Math.min.apply(null,times);
-    var t=tierOf(avg), pct=topPct(avg);
-    var prev=parseInt(load('bestAvg'),10);
-    if(isNaN(prev)||avg<prev) store('bestAvg',avg);
-    showResult({
-      tier:t.name, main:avg, unit:' ms',
-      pct:'상위 '+(pct<1?pct.toFixed(1):Math.round(pct))+'%',
-      roast:pick(t.roasts)+'<br>최고 '+best+'ms · 5회 평균 기준',
-      shareV:avg, shareM:'c',
-      shareText:function(nick,url){
-        return '🕹️ '+nick+'의 반응속도: '+avg+'ms ('+t.name+', 상위 '+(pct<1?pct.toFixed(1):Math.round(pct))+'%)\n이길 수 있으면 이겨보시지 👇\n'+url;
-      },
-      verdict: chal&&chal.mode==='classic' ? (avg<chal.v?'win':(avg>chal.v?'lose':'draw')) : null,
-      verdictText: chal ? {
-        win:'🏆 승리! '+avg+'ms vs '+chal.v+'ms<br>'+chal.name+'을(를) '+(chal.v-avg)+'ms 차로 제압',
-        lose:'💀 패배… '+avg+'ms vs '+chal.v+'ms<br>조용히 한 판 더 하고 오자',
-        draw:'🤝 무승부. 이런 확률이?'
-      } : null
-    });
-  }
-
-  // ---- 서바이벌 ----
+  // ---- 라운드 ----
   function survRound(){
     state='waiting'; stage.className='waiting';
     stageTitle.textContent='기다려…';
@@ -329,7 +263,7 @@
       }, limit+40);
     };
     var wait=800+Math.random()*1800;
-    if(Math.random()<0.3 && wait>1300){
+    if(Math.random()<FAKE_CHANCE && wait>1300){
       timer=setTimeout(function(){
         if(state!=='waiting')return;
         state='fakeShow'; stage.className='fake';
@@ -346,35 +280,45 @@
       timer=setTimeout(goGreen, wait);
     }
   }
+
   function survDie(msg){
     clearTimeout(timer); clearTimeout(deadline); state='dying';
     var t=survTierOf(survived);
     var prev=parseInt(load('bestSurv'),10);
     if(isNaN(prev)||survived>prev) store('bestSurv',survived);
-    // 탈락을 먼저 보여주고 결과로 (갑자기 화면이 바뀌는 느낌 방지)
+    var avg=null;
+    if(times.length>=3){
+      avg=Math.round(times.reduce(function(a,b){return a+b;},0)/times.length);
+      var pa=parseInt(load('bestAvg'),10);
+      if(isNaN(pa)||avg<pa) store('bestAvg',avg);
+    }
     stage.className='waiting';
-    stageTitle.textContent='💀 탈락!';
+    stageTitle.textContent='탈락!';
     stageDesc.textContent=msg;
-    setTimeout(function(){ survResult(msg,t); }, 1300);
+    setTimeout(function(){ survResult(msg,t,avg); }, 1300);
   }
-  function survResult(msg,t){
+
+  function survResult(msg,t,avg){
+    var pctTxt = avg ? '평균 반응 '+avg+'ms · 상위 '+fmtPct(topPct(avg))+'%' : '';
     showResult({
       tier:t.name, main:survived, unit:' 라운드 생존',
-      pct:msg, cardLine:'서바이벌 모드 생존 기록', roast:pick(t.roasts),
-      shareV:survived, shareM:'s',
+      pct:msg, cardLine:pctTxt||'서바이벌 생존 기록',
+      roast:pick(t.roasts)+(pctTxt?'<br>'+pctTxt:''),
+      shareV:survived,
       shareText:function(nick,url){
-        return '🕹️ '+nick+', 서바이벌 '+survived+'라운드 생존 ('+t.name+')\n나보다 오래 버티면 인정 👇\n'+url;
+        return nick+', 서바이벌 '+survived+'라운드 생존 ('+t.name+')'+(avg?' · 평균 '+avg+'ms':'')+'\n나보다 오래 버티면 인정 → '+url;
       },
-      verdict: chal&&chal.mode==='survival' ? (survived>chal.v?'win':(survived<chal.v?'lose':'draw')) : null,
+      verdict: chal ? (survived>chal.v?'win':(survived<chal.v?'lose':'draw')) : null,
       verdictText: chal ? {
-        win:'🏆 승리! '+survived+' vs '+chal.v+'라운드',
-        lose:'💀 패배… '+survived+' vs '+chal.v+'라운드',
-        draw:'🤝 무승부. 다시 가서 결판을 내자'
+        win:'승리! '+survived+' vs '+chal.v+'라운드 — '+chal.name+' 제압',
+        lose:'패배… '+survived+' vs '+chal.v+'라운드. 조용히 한 판 더.',
+        draw:'무승부. 다시 가서 결판을 내자.'
       } : null
     });
   }
+  function fmtPct(p){ return p<1?p.toFixed(1):Math.round(p); }
 
-  // ---- 결과 표시/공유 ----
+  // ---- 결과 표시 ----
   var shareCtx=null;
   function showResult(o){
     state='done'; show('result');
@@ -387,6 +331,7 @@
     var savedNick=load('nick'); if(savedNick)$('nick').value=savedNick;
     shareCtx=o; renderHomeBest();
   }
+
   function requireNick(){
     var nick=$('nick').value.trim().slice(0,10);
     if(!nick){
@@ -399,21 +344,19 @@
     return nick;
   }
 
-  // ---- 기록 카드 (자랑용 이미지) ----
+  // ---- 기록 카드 ----
   function drawCard(nick,o){
     var W=1000,H=1250,c=document.createElement('canvas');c.width=W;c.height=H;
     var x=c.getContext('2d');
     var F=function(px,w){return (w||'')+' '+px+'px Galmuri11, "Apple SD Gothic Neo", sans-serif';};
     x.fillStyle='#0a0a12';x.fillRect(0,0,W,H);
-    // 스캔라인
     x.fillStyle='rgba(0,0,0,0.35)';
     for(var y=0;y<H;y+=6)x.fillRect(0,y,W,2);
-    // 이중 네온 테두리
     x.strokeStyle='#39ff88';x.lineWidth=6;x.strokeRect(30,30,W-60,H-60);
     x.strokeStyle='rgba(57,255,136,0.35)';x.lineWidth=2;x.strokeRect(50,50,W-100,H-100);
     x.textAlign='center';
     x.fillStyle='#39ff88';x.font=F(52,'700');
-    x.fillText('⚡ 반응속도 오락실 ⚡',W/2,150);
+    x.fillText('반응속도 오락실',W/2,150);
     x.fillStyle='#5f8a72';x.font=F(30);
     x.fillText('— 판정 결과 —',W/2,215);
     x.fillStyle='#eafff2';x.font=F(44,'700');
@@ -426,8 +369,8 @@
     x.fillText(o.main+'',W/2,680);
     x.fillStyle='#7d879f';x.font=F(44);
     x.fillText(o.unit.trim(),W/2,750);
-    x.fillStyle='#39ff88';x.font=F(46,'700');
-    x.fillText(o.cardLine||o.pct,W/2,860);
+    x.fillStyle='#39ff88';x.font=F(42,'700');
+    x.fillText(o.cardLine,W/2,860);
     x.fillStyle='#ff3d81';x.font=F(38,'700');
     x.fillText('이길 수 있으면 이겨보시지',W/2,990);
     x.fillStyle='#6ee7ff';x.font=F(28);
@@ -443,7 +386,7 @@
       if(!blob)return;
       var file=new File([blob],'record.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
-        navigator.share({files:[file],text:'⚡ 반응속도 오락실 — 이길 수 있으면 이겨보시지\nhttps://sjidok750-creator.github.io/reaction-test/'}).catch(function(){});
+        navigator.share({files:[file],text:'반응속도 오락실 — 이길 수 있으면 이겨보시지\nhttps://sjidok750-creator.github.io/reaction-test/'}).catch(function(){});
       }else{
         $('cardImg').src=c.toDataURL('image/png');
         $('cardOverlay').classList.add('on');
@@ -455,7 +398,7 @@
   $('shareBtn').addEventListener('click',function(){
     if(!shareCtx)return;
     var nick=requireNick(); if(!nick)return;
-    var url=location.origin+location.pathname+'?c='+shareCtx.shareV+'&m='+shareCtx.shareM+'&n='+encodeURIComponent(nick);
+    var url=location.origin+location.pathname+'?c='+shareCtx.shareV+'&m=s&n='+encodeURIComponent(nick);
     var text=shareCtx.shareText(nick,url);
     if(navigator.share){ navigator.share({text:text}).catch(function(){}); }
     else{
@@ -463,75 +406,44 @@
       var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
       ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta);
       $('copied').style.display='block';
-      setTimeout(function(){$('copied').style.display='none';},2500);
+      setTimeout(function(){ $('copied').style.display='none'; },2500);
     }
   });
 
   // ---- 입력 ----
   stage.addEventListener('pointerdown',function(){
-    if(state==='between'){ mode==='classic'?classicRound():survRound(); return; }
-    if(state==='fakeShow'){
-      clearTimeout(timer);
-      if(mode==='survival'){ survDie('페이크에 당했다… 파란불은 함정이다'); return; }
-      state='between'; stage.className='early';
-      stageTitle.textContent='페이크에 당했다 🫢';
-      stageDesc.textContent='파란불은 함정. 탭해서 이 라운드 재시작';
-      return;
-    }
-    if(state==='waiting'){
-      clearTimeout(timer);
-      if(mode==='survival'){ survDie('너무 성급했다… 초록불이 뜨기 전이었다'); return; }
-      state='between'; stage.className='early';
-      stageTitle.textContent='성급했다!';
-      stageDesc.textContent='초록불 전이었다. 탭해서 이 라운드 재시작';
-      return;
-    }
+    if(state==='between'){ survRound(); return; }
+    if(state==='fakeShow'){ clearTimeout(timer); survDie('페이크에 당했다… 파란불은 함정이다'); return; }
+    if(state==='waiting'){ clearTimeout(timer); survDie('너무 성급했다… 초록불이 뜨기 전이었다'); return; }
     if(state==='ready'){
       var ms=Math.round(performance.now()-readyAt);
-      if(mode==='survival'){
-        clearTimeout(deadline);
-        if(ms<=limit){
-          survived++; limit=Math.max(SURV_MIN, limit-SURV_STEP);
-          state='between'; stage.className='';
-          stageTitle.textContent=ms+'ms — 생존';
-          stageDesc.textContent='탭해서 다음 라운드. 제한시간은 '+limit+'ms로 줄어든다';
-        } else {
-          survDie(ms+'ms… '+limit+'ms 제한을 넘겼다');
-        }
-        return;
+      clearTimeout(deadline);
+      if(ms<=limit){
+        times.push(ms);
+        survived++; limit=Math.max(SURV_MIN, limit-SURV_STEP);
+        state='between'; stage.className='';
+        stageTitle.textContent=ms+'ms — 생존';
+        stageDesc.textContent='탭해서 다음 라운드. 제한시간은 '+limit+'ms로 줄어든다';
+      } else {
+        survDie(ms+'ms… '+limit+'ms 제한을 넘겼다');
       }
-      times.push(ms); round++;
-      $('hudLeft').textContent='기록: '+times.join(' · ');
-      if(round>=TOTAL){ classicDone(); return; }
-      state='between'; stage.className='';
-      stageTitle.textContent=ms+'ms';
-      stageDesc.textContent='탭해서 다음 라운드 ('+(round+1)+'/'+TOTAL+')';
     }
   });
 
   // ---- 시작/이동 ----
-  function startGame(m){
-    mode=m; round=0; times=[]; survived=0; limit=SURV_START;
+  function startGame(){
+    survived=0; limit=SURV_START; times=[];
     $('hudLeft').textContent=''; $('hudRight').textContent='';
     show('game'); state='between'; stage.className='';
-    var legend='<b style="color:#ff3d81">● 빨간불</b> 기다려 → <b style="color:#39ff88">● 초록불</b> 빨리 탭! → <b style="color:#6ee7ff">● 파란불</b> 페이크, 참아';
-    if(m==='classic'){
-      stageTitle.textContent='클래식 5라운드';
-      stageDesc.innerHTML=legend+'<br><br>화면 아무 데나 탭하면 시작';
-    } else {
-      stageTitle.textContent='서바이벌';
-      stageDesc.innerHTML=legend+'<br>라운드마다 제한시간이 짧아진다. 못 누르면 탈락<br><br>화면 아무 데나 탭하면 시작';
-    }
+    stageTitle.textContent='준비됐나';
+    stageDesc.innerHTML='<b style="color:#ff3d81">빨간불</b> 기다려 → <b style="color:#39ff88">초록불</b> 빨리 탭! → <b style="color:#6ee7ff">파란불</b> 페이크, 참아<br>라운드마다 제한시간이 짧아진다<br><br>화면 아무 데나 탭하면 시작';
   }
-  document.querySelectorAll('.slot').forEach(function(el){
-    el.addEventListener('click',function(){ startGame(el.dataset.mode); });
-  });
-  $('retryBtn').addEventListener('click',function(){ startGame(mode); });
+  $('startSlot').addEventListener('click',startGame);
+  $('retryBtn').addEventListener('click',startGame);
   $('homeBtn').addEventListener('click',function(){ show('home'); renderHomeBest(); });
 
-  // 도전장 타고 왔으면 해당 모드로 바로 입장
   renderHomeBest();
-  if(chal) startGame(chal.mode);
+  if(chal) startGame();
 })();
 </script>
 </body>
