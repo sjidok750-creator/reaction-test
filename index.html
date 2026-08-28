@@ -124,6 +124,18 @@
     color:#eafff2; font-size:0.85rem; font-family:inherit; outline:none; text-align:center;
   }
   #nick:focus { border-color:#6ee7ff; }
+  #nick.need { border-color:#ff3d81; }
+  #nickWarn { display:none; margin-top:6px; font-size:0.7rem; color:#ff3d81; text-align:center; }
+  .btn-p { color:#ffb8d1; border-color:#ff3d81; }
+  /* 기록 카드 오버레이 */
+  #cardOverlay {
+    display:none; position:fixed; inset:0; z-index:20; background:rgba(4,4,10,0.92);
+    align-items:center; justify-content:center; padding:20px;
+  }
+  #cardOverlay.on { display:flex; }
+  .cardBox { width:100%; max-width:380px; text-align:center; }
+  #cardImg { width:100%; border:2px solid #39ff88; box-shadow:0 0 20px rgba(57,255,136,0.3); }
+  .cardHint { margin-top:10px; font-size:0.72rem; color:#8b95ad; }
   footer { text-align:center; font-size:0.6rem; color:#434c60; padding:8px 0 4px; line-height:1.8; }
   /* 광고 자리 (애드핏/애드센스 승인 후 활성화) */
   #adSlot { display:none; margin-top:10px; min-height:50px; }
@@ -172,13 +184,24 @@
       <div class="pct" id="pct"></div>
       <div class="roast" id="roast"></div>
       <div id="verdict"></div>
-      <input id="nick" maxlength="10" placeholder="도전장에 새길 이름">
+      <input id="nick" maxlength="10" placeholder="이름을 넣어야 자랑이 완성된다">
+      <div id="nickWarn">↑ 이름부터! 누가 세운 기록인지 알려야지</div>
       <button class="btn btn-y" id="shareBtn">💌 도전장 보내기</button>
+      <button class="btn btn-p" id="bragBtn">📸 기록 카드로 자랑하기</button>
       <div id="copied">복사 완료 — 단톡방에 붙여넣으면 전쟁 시작</div>
       <button class="btn btn-g" id="retryBtn">한 판 더</button>
       <button class="btn btn-d" id="homeBtn">모드 선택으로</button>
     </div>
     <div id="adSlot"></div>
+  </div>
+
+  <!-- 기록 카드 오버레이 -->
+  <div id="cardOverlay">
+    <div class="cardBox">
+      <img id="cardImg" alt="기록 카드">
+      <div class="cardHint">이미지를 길게 눌러 저장하거나 공유하세요</div>
+      <button class="btn btn-d" id="cardClose">닫기</button>
+    </div>
   </div>
 
   <footer>기록은 이 기기에만 저장 · 백분위는 성인 터치 반응 분포 추정치</footer>
@@ -337,7 +360,7 @@
   function survResult(msg,t){
     showResult({
       tier:t.name, main:survived, unit:' 라운드 생존',
-      pct:msg, roast:pick(t.roasts),
+      pct:msg, cardLine:'서바이벌 모드 생존 기록', roast:pick(t.roasts),
       shareV:survived, shareM:'s',
       shareText:function(nick,url){
         return '🕹️ '+nick+', 서바이벌 '+survived+'라운드 생존 ('+t.name+')\n나보다 오래 버티면 인정 👇\n'+url;
@@ -364,9 +387,74 @@
     var savedNick=load('nick'); if(savedNick)$('nick').value=savedNick;
     shareCtx=o; renderHomeBest();
   }
+  function requireNick(){
+    var nick=$('nick').value.trim().slice(0,10);
+    if(!nick){
+      $('nick').classList.add('need'); $('nickWarn').style.display='block';
+      $('nick').focus();
+      return null;
+    }
+    $('nick').classList.remove('need'); $('nickWarn').style.display='none';
+    store('nick',nick);
+    return nick;
+  }
+
+  // ---- 기록 카드 (자랑용 이미지) ----
+  function drawCard(nick,o){
+    var W=1000,H=1250,c=document.createElement('canvas');c.width=W;c.height=H;
+    var x=c.getContext('2d');
+    var F=function(px,w){return (w||'')+' '+px+'px Galmuri11, "Apple SD Gothic Neo", sans-serif';};
+    x.fillStyle='#0a0a12';x.fillRect(0,0,W,H);
+    // 스캔라인
+    x.fillStyle='rgba(0,0,0,0.35)';
+    for(var y=0;y<H;y+=6)x.fillRect(0,y,W,2);
+    // 이중 네온 테두리
+    x.strokeStyle='#39ff88';x.lineWidth=6;x.strokeRect(30,30,W-60,H-60);
+    x.strokeStyle='rgba(57,255,136,0.35)';x.lineWidth=2;x.strokeRect(50,50,W-100,H-100);
+    x.textAlign='center';
+    x.fillStyle='#39ff88';x.font=F(52,'700');
+    x.fillText('⚡ 반응속도 오락실 ⚡',W/2,150);
+    x.fillStyle='#5f8a72';x.font=F(30);
+    x.fillText('— 판정 결과 —',W/2,215);
+    x.fillStyle='#eafff2';x.font=F(44,'700');
+    x.fillText(nick+'의 기록',W/2,320);
+    x.fillStyle='#ffe14d';x.font=F(76,'700');
+    x.shadowColor='rgba(255,225,77,0.6)';x.shadowBlur=24;
+    x.fillText(o.tier,W/2,480);
+    x.shadowBlur=0;
+    x.fillStyle='#ffffff';x.font=F(140,'700');
+    x.fillText(o.main+'',W/2,680);
+    x.fillStyle='#7d879f';x.font=F(44);
+    x.fillText(o.unit.trim(),W/2,750);
+    x.fillStyle='#39ff88';x.font=F(46,'700');
+    x.fillText(o.cardLine||o.pct,W/2,860);
+    x.fillStyle='#ff3d81';x.font=F(38,'700');
+    x.fillText('이길 수 있으면 이겨보시지',W/2,990);
+    x.fillStyle='#6ee7ff';x.font=F(28);
+    x.fillText('sjidok750-creator.github.io/reaction-test',W/2,1120);
+    return c;
+  }
+  $('bragBtn').addEventListener('click',function(){
+    if(!shareCtx)return;
+    var nick=requireNick(); if(!nick)return;
+    var c;
+    try{ c=drawCard(nick,shareCtx); }catch(e){ return; }
+    c.toBlob(function(blob){
+      if(!blob)return;
+      var file=new File([blob],'record.png',{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
+        navigator.share({files:[file],text:'⚡ 반응속도 오락실 — 이길 수 있으면 이겨보시지\nhttps://sjidok750-creator.github.io/reaction-test/'}).catch(function(){});
+      }else{
+        $('cardImg').src=c.toDataURL('image/png');
+        $('cardOverlay').classList.add('on');
+      }
+    },'image/png');
+  });
+  $('cardClose').addEventListener('click',function(){ $('cardOverlay').classList.remove('on'); });
+
   $('shareBtn').addEventListener('click',function(){
     if(!shareCtx)return;
-    var nick=($('nick').value.trim()||'익명').slice(0,10); store('nick',nick);
+    var nick=requireNick(); if(!nick)return;
     var url=location.origin+location.pathname+'?c='+shareCtx.shareV+'&m='+shareCtx.shareM+'&n='+encodeURIComponent(nick);
     var text=shareCtx.shareText(nick,url);
     if(navigator.share){ navigator.share({text:text}).catch(function(){}); }
