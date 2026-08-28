@@ -194,7 +194,7 @@
   var mode='classic', state='idle', timer=null, deadline=null, readyAt=0;
   var round=0, times=[], survived=0, limit=0;
   var TOTAL=5, FAKE_CHANCE=0.45;
-  var SURV_START=480, SURV_STEP=28, SURV_MIN=180;
+  var SURV_START=600, SURV_STEP=30, SURV_MIN=180;
 
   // ---- 도전장 파싱 ----
   var q=new URLSearchParams(location.search), chal=null;
@@ -324,10 +324,17 @@
     }
   }
   function survDie(msg){
-    clearTimeout(timer); clearTimeout(deadline); state='done';
+    clearTimeout(timer); clearTimeout(deadline); state='dying';
     var t=survTierOf(survived);
     var prev=parseInt(load('bestSurv'),10);
     if(isNaN(prev)||survived>prev) store('bestSurv',survived);
+    // 탈락을 먼저 보여주고 결과로 (갑자기 화면이 바뀌는 느낌 방지)
+    stage.className='waiting';
+    stageTitle.textContent='💀 탈락!';
+    stageDesc.textContent=msg;
+    setTimeout(function(){ survResult(msg,t); }, 1300);
+  }
+  function survResult(msg,t){
     showResult({
       tier:t.name, main:survived, unit:' 라운드 생존',
       pct:msg, roast:pick(t.roasts),
