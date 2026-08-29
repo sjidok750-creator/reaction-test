@@ -62,38 +62,38 @@
   }
   .startBar:active { transform:scale(0.985); }
 
-  /* 게임 */
+  /* 게임: 풀스크린 컬러 스테이트 */
   #stage {
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; cursor:pointer; border-radius:24px; background:#15181d;
-    padding:24px; min-height:0; transition:background 0.06s;
+    text-align:center; cursor:pointer; border-radius:28px; background:#15181d;
+    padding:24px; min-height:0; transition:background 0.05s;
   }
-  #stage.waiting { background:#2b0f18; }
+  #stage.waiting { background:#ff2e54; }
   #stage.ready   { background:#c8ff2e; }
-  #stage.fake    { background:#0f2233; }
-  #stage.early   { background:#2b2410; }
-  #stage h2 { font-size:1.4rem; font-weight:800; line-height:1.5; letter-spacing:-0.02em; }
+  #stage.fake    { background:#2e6bff; }
+  #stage h2 { font-size:1.6rem; font-weight:900; line-height:1.4; letter-spacing:-0.03em; }
+  #stage.waiting h2 { color:#fff; }
+  #stage.fake h2 { color:#fff; }
   #stage.ready h2, #stage.ready p { color:#0b0d10; }
-  #stage .huge { font-size:3.4rem; font-weight:900; letter-spacing:-0.04em; }
-  #stage.waiting .huge { color:#ff4d6d; }
-  #stage.fake h2 { color:#4dc9ff; }
-  #stage p { margin-top:12px; font-size:0.82rem; color:#9aa3ad; line-height:1.8; font-weight:500; }
-  #stage.waiting p { color:#c99; }
-  #stage .ms { font-variant-numeric:tabular-nums; }
-  #hud { display:flex; justify-content:space-between; font-size:0.78rem; color:#7c8590; padding:10px 6px 0; min-height:1.7em; font-weight:700; font-variant-numeric:tabular-nums; }
+  #stage .huge { font-size:4.6rem; font-weight:900; letter-spacing:-0.05em; }
+  #stage p { margin-top:14px; font-size:1rem; color:#9aa3ad; line-height:1.7; font-weight:700; }
+  #stage.waiting p { color:rgba(255,255,255,0.85); }
+  #stage.fake p { color:rgba(255,255,255,0.85); }
+  #stage .ms { font-variant-numeric:tabular-nums; color:#c8ff2e; }
+  #hud { display:flex; justify-content:space-between; font-size:0.92rem; color:#7c8590; padding:12px 8px 0; min-height:1.8em; font-weight:800; font-variant-numeric:tabular-nums; }
   #hud .val { color:#c8ff2e; }
 
   /* 결과 */
   #result { overflow-y:auto; }
   .frame { border-radius:24px; background:#15181d; padding:24px 18px; text-align:center; }
   .tierChip {
-    display:inline-block; padding:8px 18px; border-radius:999px; background:rgba(200,255,46,0.12);
-    color:#c8ff2e; font-size:0.9rem; font-weight:800;
+    display:inline-block; padding:10px 22px; border-radius:999px; background:rgba(200,255,46,0.14);
+    color:#c8ff2e; font-size:1.05rem; font-weight:900;
   }
-  .score { font-size:3.6rem; font-weight:900; margin-top:14px; letter-spacing:-0.04em; font-variant-numeric:tabular-nums; }
-  .score small { font-size:1.05rem; color:#7c8590; font-weight:700; letter-spacing:0; }
-  .pct { margin-top:8px; font-size:0.9rem; color:#9aa3ad; line-height:1.7; font-weight:600; }
-  .roast { margin-top:16px; font-size:0.85rem; color:#c8cfd8; line-height:1.8; font-weight:500;
+  .score { font-size:4.6rem; font-weight:900; margin-top:12px; letter-spacing:-0.05em; font-variant-numeric:tabular-nums; }
+  .score small { font-size:1.15rem; color:#7c8590; font-weight:800; letter-spacing:-0.01em; }
+  .pct { margin-top:8px; font-size:1rem; color:#c8cfd8; line-height:1.7; font-weight:700; }
+  .roast { margin-top:16px; font-size:0.95rem; color:#9aa3ad; line-height:1.8; font-weight:600;
     border-top:1px solid #232830; padding-top:14px; }
   #verdict { display:none; margin-top:14px; padding:14px; border-radius:16px; font-size:0.9rem; line-height:1.7; font-weight:700; }
   #verdict.win  { color:#c8ff2e; background:rgba(200,255,46,0.1); }
