@@ -39,35 +39,28 @@
   .screen { flex:1; display:none; flex-direction:column; min-height:0; margin-top:12px; }
   .screen.on { display:flex; }
 
-  /* 홈 */
-  .howto { display:flex; gap:8px; }
-  .how {
-    flex:1; border-radius:16px; padding:14px 6px; text-align:center;
-    font-size:0.7rem; line-height:1.7; color:#c8cfd8; font-weight:600; background:#15181d;
+  /* 홈: 포스터 */
+  .ticker { overflow:hidden; white-space:nowrap; border-top:1px solid #232830; border-bottom:1px solid #232830; padding:8px 0; }
+  .tickerIn { display:inline-block; font-size:0.78rem; font-weight:700; color:#7c8590; animation:tick 16s linear infinite; }
+  .tickerIn b.r { color:#ff4d6d; } .tickerIn b.g { color:#c8ff2e; } .tickerIn b.b { color:#4dc9ff; }
+  @keyframes tick { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce){ .tickerIn { animation:none; } }
+  .hero { flex:1; display:flex; flex-direction:column; justify-content:center; padding:0 6px; min-height:0; }
+  .heroL1 {
+    font-size:2.6rem; font-weight:900; letter-spacing:-0.04em; line-height:1.1;
+    color:transparent; -webkit-text-stroke:1.5px #f5f7f9;
   }
-  .how b { display:block; font-size:0.82rem; font-weight:800; margin-top:2px; }
-  .how .lamp { display:block; width:12px; height:12px; margin:0 auto 8px; border-radius:50%; }
-  .how.red .lamp   { background:#ff4d6d; box-shadow:0 0 10px rgba(255,77,109,0.8); }
-  .how.red b       { color:#ff8aa0; }
-  .how.lime .lamp  { background:#c8ff2e; box-shadow:0 0 10px rgba(200,255,46,0.8); }
-  .how.lime b      { color:#c8ff2e; }
-  .how.blue .lamp  { background:#4dc9ff; box-shadow:0 0 10px rgba(77,201,255,0.8); }
-  .how.blue b      { color:#4dc9ff; }
-
-  #startSlot {
-    flex:1; margin-top:12px; border-radius:24px; background:#15181d;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
-    cursor:pointer; text-align:center; padding:24px; min-height:0;
+  .heroL2 { font-size:4.6rem; font-weight:900; letter-spacing:-0.05em; line-height:1.05; color:#c8ff2e; }
+  .hook { margin-top:18px; font-size:0.92rem; color:#9aa3ad; font-weight:600; }
+  .sticker {
+    align-self:flex-start; margin-top:22px; padding:10px 16px; border:1.5px solid #c8ff2e; border-radius:12px;
+    color:#c8ff2e; font-size:0.82rem; font-weight:800; transform:rotate(-3deg); background:rgba(200,255,46,0.06);
   }
-  #startSlot:active { transform:scale(0.985); }
-  #startSlot .go {
-    width:88px; height:88px; border-radius:50%; background:#c8ff2e; color:#0b0d10;
-    display:flex; align-items:center; justify-content:center; font-size:1.05rem; font-weight:900;
-    box-shadow:0 0 40px rgba(200,255,46,0.35);
+  .startBar {
+    width:100%; padding:20px; border:none; border-radius:18px; background:#c8ff2e; color:#0b0d10;
+    font-size:1.15rem; font-weight:900; font-family:inherit; cursor:pointer; letter-spacing:-0.02em;
   }
-  #startSlot .desc { font-size:0.82rem; color:#9aa3ad; line-height:1.7; font-weight:500; }
-  .homeBest { padding:14px 4px 4px; font-size:0.78rem; color:#7c8590; text-align:center; font-weight:600; }
-  .homeBest b { color:#c8ff2e; }
+  .startBar:active { transform:scale(0.985); }
 
   /* 게임 */
   #stage {
@@ -149,16 +142,14 @@
 
   <!-- 홈 -->
   <div class="screen on" id="home">
-    <div class="howto">
-      <div class="how red"><span class="lamp"></span>빨간불<b>기다려</b></div>
-      <div class="how lime"><span class="lamp"></span>초록불<b>빨리 탭</b></div>
-      <div class="how blue"><span class="lamp"></span>파란불<b>속지 마</b></div>
+    <div class="ticker"><div class="tickerIn" id="tickerIn"></div></div>
+    <div class="hero">
+      <div class="heroL1">몇 라운드까지</div>
+      <div class="heroL2">버티냐</div>
+      <div class="hook">평균적인 인간은 3라운드에서 탈락한다</div>
+      <div class="sticker" id="homeBest"></div>
     </div>
-    <div id="startSlot">
-      <div class="go">START</div>
-      <div class="desc">라운드마다 제한시간이 짧아진다<br>제한시간 안에 못 누르면 그대로 탈락</div>
-    </div>
-    <div class="homeBest" id="homeBest"></div>
+    <button class="startBar" id="startSlot">시작 →</button>
   </div>
 
   <!-- 게임 -->
@@ -239,8 +230,12 @@
   function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function renderHomeBest(){
     var s=load('bestSurv'), a=load('bestAvg');
-    $('homeBest').innerHTML='내 최고 기록 <b>'+(s?s+'라운드':'—')+'</b>'+(a?' · 평균 반응 <b>'+a+'ms</b>':'');
+    $('homeBest').textContent = s ? ('내 최고 '+s+'라운드'+(a?' · 평균 '+a+'ms':'')) : '아직 기록 없음. 오늘 생긴다';
   }
+  (function(){
+    var seg='<b class="r">빨간불</b> 기다려&nbsp;&nbsp;→&nbsp;&nbsp;<b class="g">초록불</b> 빨리 탭&nbsp;&nbsp;→&nbsp;&nbsp;<b class="b">파란불</b> 속지 마&nbsp;&nbsp;→&nbsp;&nbsp;제한시간은 점점 짧아진다&nbsp;&nbsp;→&nbsp;&nbsp;';
+    $('tickerIn').innerHTML=seg+seg;
+  })();
 
   function survRound(){
     state='waiting'; stage.className='waiting';
