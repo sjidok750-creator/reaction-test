@@ -3,165 +3,160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>반응속도 오락실</title>
-<meta name="description" content="라운드마다 짧아지는 제한시간, 페이크에 속지 않기. 몇 라운드까지 버티나. 도전장을 보내 단톡방 1등을 가립니다.">
-<meta property="og:title" content="⚡ 반응속도 오락실">
-<meta property="og:description" content="제한시간은 점점 짧아진다. 몇 라운드까지 버티나 — 도전장을 보내고 단톡방 1등을 가리세요.">
+<title>반응속도 서바이벌</title>
+<meta name="description" content="라운드마다 짧아지는 제한시간. 페이크에 속지 말 것. 몇 라운드까지 버티나 — 기록을 보내 단톡방 1등을 가리자.">
+<meta property="og:title" content="반응속도 서바이벌">
+<meta property="og:description" content="제한시간은 점점 짧아진다. 몇 라운드까지 버티나 — 기록을 보내고 1등을 가리자.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sjidok750-creator.github.io/reaction-test/">
 <meta property="og:image" content="https://sjidok750-creator.github.io/reaction-test/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕹️</text></svg>">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css">
-<link rel="stylesheet" href="https://unpkg.com/galmuri/dist/galmuri.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23c8ff2e%22/><text x=%2250%22 y=%2272%22 font-size=%2260%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22900%22>⚡</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body { height:100%; overscroll-behavior:none; }
   body {
-    font-family:'Galmuri11', 'Galmuri9', -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-    background:#0a0a12; color:#d8ffe8;
+    font-family:'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background:#0b0d10; color:#f5f7f9;
     display:flex; justify-content:center;
     user-select:none; -webkit-user-select:none;
   }
-  /* CRT 스캔라인 */
-  body::after {
-    content:''; position:fixed; inset:0; pointer-events:none; z-index:9;
-    background:repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 1px, transparent 1px 3px);
-  }
-  #app { width:100%; max-width:480px; height:100dvh; display:flex; flex-direction:column; padding:14px; position:relative; }
+  #app { width:100%; max-width:480px; height:100dvh; display:flex; flex-direction:column; padding:16px; }
 
-  .marquee {
-    text-align:center; border:2px solid #39ff88; padding:10px 6px 8px; position:relative;
-    box-shadow:0 0 14px rgba(57,255,136,0.25), inset 0 0 14px rgba(57,255,136,0.08);
-  }
-  .marquee h1 { font-size:1.25rem; color:#39ff88; letter-spacing:0.06em; text-shadow:0 0 8px rgba(57,255,136,0.7); }
-  .marquee .sub { font-size:0.68rem; color:#5f8a72; margin-top:4px; letter-spacing:0.1em; }
+  header { display:flex; align-items:baseline; justify-content:space-between; padding:4px 4px 0; }
+  header h1 { font-size:1.3rem; font-weight:900; letter-spacing:-0.03em; }
+  header h1 em { font-style:normal; color:#c8ff2e; }
+  header .sub { font-size:0.72rem; color:#7c8590; font-weight:600; }
 
   #challengeBanner {
-    display:none; margin-top:10px; padding:9px 10px; border:2px dashed #ff3d81;
-    font-size:0.78rem; text-align:center; line-height:1.7; color:#ffb8d1;
+    display:none; margin-top:12px; padding:12px 16px; border-radius:16px;
+    background:#15181d; font-size:0.85rem; line-height:1.6; font-weight:600;
   }
-  #challengeBanner b { color:#ff3d81; }
+  #challengeBanner b { color:#c8ff2e; }
 
   .screen { flex:1; display:none; flex-direction:column; min-height:0; margin-top:12px; }
   .screen.on { display:flex; }
 
-  /* 홈: 3초 규칙 설명 */
-  .howto {
-    display:flex; align-items:stretch; gap:6px; margin-bottom:12px;
-  }
-  .how {
-    flex:1; border:2px solid; padding:10px 4px; text-align:center;
-    font-size:0.62rem; line-height:1.8; color:#c3cbdd;
-  }
-  .how b { font-size:0.74rem; }
-  .how .lamp { display:block; width:14px; height:14px; margin:0 auto 6px; border-radius:50%; }
-  .how.red   { border-color:#ff3d81; background:rgba(255,61,129,0.08); }
-  .how.red .lamp { background:#ff3d81; box-shadow:0 0 8px #ff3d81; }
-  .how.red b { color:#ff8fb1; }
-  .how.green { border-color:#39ff88; background:rgba(57,255,136,0.08); }
-  .how.green .lamp { background:#39ff88; box-shadow:0 0 8px #39ff88; }
-  .how.green b { color:#39ff88; }
-  .how.blue  { border-color:#6ee7ff; background:rgba(110,231,255,0.08); }
-  .how.blue .lamp { background:#6ee7ff; box-shadow:0 0 8px #6ee7ff; }
-  .how.blue b { color:#6ee7ff; }
-  .arrow { align-self:center; color:#434c60; font-size:0.7rem; }
-
   /* 홈 */
-  .slot {
-    border:2px solid #2b3346; padding:16px 14px; margin-bottom:12px; cursor:pointer; background:#0e1020;
-    box-shadow:4px 4px 0 #000;
+  .howto { display:flex; gap:8px; }
+  .how {
+    flex:1; border-radius:16px; padding:14px 6px; text-align:center;
+    font-size:0.7rem; line-height:1.7; color:#c8cfd8; font-weight:600; background:#15181d;
   }
-  .slot:active { transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
-  .slot .name { font-size:1rem; color:#ffe14d; }
-  .slot .desc { font-size:0.72rem; color:#7d879f; margin-top:6px; line-height:1.7; }
-  .slot.s2 .name { color:#6ee7ff; }
-  .homeBest { margin-top:auto; font-size:0.7rem; color:#5a6478; text-align:center; line-height:1.9; }
-  .homeBest b { color:#39ff88; }
+  .how b { display:block; font-size:0.82rem; font-weight:800; margin-top:2px; }
+  .how .lamp { display:block; width:12px; height:12px; margin:0 auto 8px; border-radius:50%; }
+  .how.red .lamp   { background:#ff4d6d; box-shadow:0 0 10px rgba(255,77,109,0.8); }
+  .how.red b       { color:#ff8aa0; }
+  .how.lime .lamp  { background:#c8ff2e; box-shadow:0 0 10px rgba(200,255,46,0.8); }
+  .how.lime b      { color:#c8ff2e; }
+  .how.blue .lamp  { background:#4dc9ff; box-shadow:0 0 10px rgba(77,201,255,0.8); }
+  .how.blue b      { color:#4dc9ff; }
 
-  /* 게임 스테이지 */
+  #startSlot {
+    flex:1; margin-top:12px; border-radius:24px; background:#15181d;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    cursor:pointer; text-align:center; padding:24px; min-height:0;
+  }
+  #startSlot:active { transform:scale(0.985); }
+  #startSlot .go {
+    width:88px; height:88px; border-radius:50%; background:#c8ff2e; color:#0b0d10;
+    display:flex; align-items:center; justify-content:center; font-size:1.05rem; font-weight:900;
+    box-shadow:0 0 40px rgba(200,255,46,0.35);
+  }
+  #startSlot .desc { font-size:0.82rem; color:#9aa3ad; line-height:1.7; font-weight:500; }
+  .homeBest { padding:14px 4px 4px; font-size:0.78rem; color:#7c8590; text-align:center; font-weight:600; }
+  .homeBest b { color:#c8ff2e; }
+
+  /* 게임 */
   #stage {
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; cursor:pointer; border:2px solid #2b3346; background:#0e1020;
-    padding:20px; min-height:0; transition:background 0.05s;
+    text-align:center; cursor:pointer; border-radius:24px; background:#15181d;
+    padding:24px; min-height:0; transition:background 0.06s;
   }
-  #stage.waiting { background:#3d0f1e; border-color:#ff3d81; }
-  #stage.ready   { background:#0e3d24; border-color:#39ff88; }
-  #stage.fake    { background:#101b4d; border-color:#6ee7ff; }
-  #stage.early   { background:#3d2f0f; border-color:#ffe14d; }
-  #stage h2 { font-size:1.3rem; line-height:1.6; color:#eafff2; }
-  #stage .huge { font-size:2.6rem; color:#39ff88; text-shadow:0 0 10px rgba(57,255,136,0.6); }
-  #stage p { margin-top:12px; font-size:0.75rem; color:#8b95ad; line-height:1.9; }
-  #stage.waiting p, #stage.ready p, #stage.fake p, #stage.early p { color:rgba(255,255,255,0.75); }
-  #hud { display:flex; justify-content:space-between; font-size:0.7rem; color:#5a6478; padding:8px 2px 0; min-height:1.6em; }
-  #hud .val { color:#ffe14d; }
+  #stage.waiting { background:#2b0f18; }
+  #stage.ready   { background:#c8ff2e; }
+  #stage.fake    { background:#0f2233; }
+  #stage.early   { background:#2b2410; }
+  #stage h2 { font-size:1.4rem; font-weight:800; line-height:1.5; letter-spacing:-0.02em; }
+  #stage.ready h2, #stage.ready p { color:#0b0d10; }
+  #stage .huge { font-size:3.4rem; font-weight:900; letter-spacing:-0.04em; }
+  #stage.waiting .huge { color:#ff4d6d; }
+  #stage.fake h2 { color:#4dc9ff; }
+  #stage p { margin-top:12px; font-size:0.82rem; color:#9aa3ad; line-height:1.8; font-weight:500; }
+  #stage.waiting p { color:#c99; }
+  #stage .ms { font-variant-numeric:tabular-nums; }
+  #hud { display:flex; justify-content:space-between; font-size:0.78rem; color:#7c8590; padding:10px 6px 0; min-height:1.7em; font-weight:700; font-variant-numeric:tabular-nums; }
+  #hud .val { color:#c8ff2e; }
 
   /* 결과 */
   #result { overflow-y:auto; }
-  .frame { border:2px solid #39ff88; background:#0e1020; padding:18px 14px; text-align:center; box-shadow:4px 4px 0 #000; }
-  .rankLabel { font-size:0.68rem; color:#5f8a72; letter-spacing:0.2em; }
-  .tierName { font-size:1.6rem; color:#ffe14d; margin-top:8px; text-shadow:0 0 10px rgba(255,225,77,0.5); }
-  .score { font-size:2.4rem; color:#eafff2; margin-top:10px; }
-  .score small { font-size:1rem; color:#7d879f; }
-  .pct { margin-top:8px; font-size:0.85rem; color:#39ff88; line-height:1.7; }
-  .roast { margin-top:12px; font-size:0.78rem; color:#c3cbdd; line-height:1.9; border-top:1px dashed #2b3346; padding-top:12px; }
-  #verdict { display:none; margin-top:12px; padding:12px 10px; font-size:0.85rem; line-height:1.9; border:2px solid; }
-  #verdict.win  { color:#39ff88; border-color:#39ff88; background:rgba(57,255,136,0.06); }
-  #verdict.lose { color:#ff3d81; border-color:#ff3d81; background:rgba(255,61,129,0.06); }
+  .frame { border-radius:24px; background:#15181d; padding:24px 18px; text-align:center; }
+  .tierChip {
+    display:inline-block; padding:8px 18px; border-radius:999px; background:rgba(200,255,46,0.12);
+    color:#c8ff2e; font-size:0.9rem; font-weight:800;
+  }
+  .score { font-size:3.6rem; font-weight:900; margin-top:14px; letter-spacing:-0.04em; font-variant-numeric:tabular-nums; }
+  .score small { font-size:1.05rem; color:#7c8590; font-weight:700; letter-spacing:0; }
+  .pct { margin-top:8px; font-size:0.9rem; color:#9aa3ad; line-height:1.7; font-weight:600; }
+  .roast { margin-top:16px; font-size:0.85rem; color:#c8cfd8; line-height:1.8; font-weight:500;
+    border-top:1px solid #232830; padding-top:14px; }
+  #verdict { display:none; margin-top:14px; padding:14px; border-radius:16px; font-size:0.9rem; line-height:1.7; font-weight:700; }
+  #verdict.win  { color:#c8ff2e; background:rgba(200,255,46,0.1); }
+  #verdict.lose { color:#ff4d6d; background:rgba(255,77,109,0.1); }
 
   .btn {
-    display:block; width:100%; margin-top:10px; padding:14px; font-size:0.85rem; cursor:pointer;
-    font-family:inherit; border:2px solid; background:#0e1020; box-shadow:4px 4px 0 #000; letter-spacing:0.04em;
+    display:block; width:100%; margin-top:10px; padding:16px; font-size:0.95rem; font-weight:800;
+    cursor:pointer; font-family:inherit; border:none; border-radius:16px; letter-spacing:-0.01em;
   }
-  .btn:active { transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
-  .btn-y { color:#0a0a12; background:#ffe14d; border-color:#ffe14d; }
-  .btn-g { color:#39ff88; border-color:#39ff88; }
-  .btn-d { color:#7d879f; border-color:#2b3346; }
-  #copied { display:none; margin-top:8px; font-size:0.72rem; color:#39ff88; text-align:center; }
+  .btn:active { transform:scale(0.985); }
+  .btn-y { background:#c8ff2e; color:#0b0d10; }
+  .btn-g { background:#232830; color:#f5f7f9; }
+  .btn-d { background:transparent; color:#7c8590; }
+  a.crossLink { text-decoration:none; text-align:center; font-size:0.82rem; }
+  #copied { display:none; margin-top:8px; font-size:0.78rem; color:#c8ff2e; text-align:center; font-weight:700; }
   #nick {
-    width:100%; margin-top:12px; padding:12px; border:2px solid #2b3346; background:#0a0a12;
-    color:#eafff2; font-size:0.85rem; font-family:inherit; outline:none; text-align:center;
+    width:100%; margin-top:14px; padding:14px; border:1.5px solid #232830; border-radius:14px;
+    background:#0b0d10; color:#f5f7f9; font-size:0.9rem; font-family:inherit; outline:none;
+    text-align:center; font-weight:600;
   }
-  #nick:focus { border-color:#6ee7ff; }
-  #nick.need { border-color:#ff3d81; }
-  #nickWarn { display:none; margin-top:6px; font-size:0.7rem; color:#ff3d81; text-align:center; }
-  .btn-p { color:#ffb8d1; border-color:#ff3d81; }
-  a.crossLink { text-decoration:none; text-align:center; font-size:0.78rem; }
+  #nick::placeholder { color:#5a636e; }
+  #nick:focus { border-color:#c8ff2e; }
+  #nick.need { border-color:#ff4d6d; }
+  #nickWarn { display:none; margin-top:6px; font-size:0.75rem; color:#ff4d6d; text-align:center; font-weight:600; }
+
   /* 기록 카드 오버레이 */
   #cardOverlay {
-    display:none; position:fixed; inset:0; z-index:20; background:rgba(4,4,10,0.92);
+    display:none; position:fixed; inset:0; z-index:20; background:rgba(5,6,8,0.92);
     align-items:center; justify-content:center; padding:20px;
   }
   #cardOverlay.on { display:flex; }
   .cardBox { width:100%; max-width:380px; text-align:center; }
-  #cardImg { width:100%; border:2px solid #39ff88; box-shadow:0 0 20px rgba(57,255,136,0.3); }
-  .cardHint { margin-top:10px; font-size:0.72rem; color:#8b95ad; }
-  footer { text-align:center; font-size:0.6rem; color:#434c60; padding:8px 0 4px; line-height:1.8; }
-  /* 광고 자리 (애드핏/애드센스 승인 후 활성화) */
+  #cardImg { width:100%; border-radius:20px; }
+  .cardHint { margin-top:12px; font-size:0.78rem; color:#9aa3ad; font-weight:500; }
+  footer { text-align:center; font-size:0.65rem; color:#4a525c; padding:10px 0 4px; line-height:1.7; }
   #adSlot { display:none; margin-top:10px; min-height:50px; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="marquee">
-    <h1>⚡ 반응속도 오락실 ⚡</h1>
-    <div class="sub">INSERT COIN — 아니, 그냥 탭하세요</div>
-  </div>
-  <div id="challengeBanner">💌 <b id="chalName"></b>의 도전장이 도착했다<br><b id="chalScore"></b> — 이기면 자랑, 지면 조용히 재도전</div>
+  <header>
+    <h1>반응속도 <em>서바이벌</em></h1>
+    <div class="sub">몇 라운드까지 버티나</div>
+  </header>
+  <div id="challengeBanner"><b id="chalName"></b>의 도전장 — <b id="chalScore"></b><br>이기면 자랑, 지면 조용히 재도전</div>
 
-  <!-- 홈: 모드 선택 -->
+  <!-- 홈 -->
   <div class="screen on" id="home">
     <div class="howto">
-      <div class="how red"><span class="lamp"></span>빨간불<br><b>기다려</b></div>
-      <div class="arrow">▶</div>
-      <div class="how green"><span class="lamp"></span>초록불<br><b>빨리 탭!</b></div>
-      <div class="arrow">▶</div>
-      <div class="how blue"><span class="lamp"></span>파란불<br><b>페이크, 참아</b></div>
+      <div class="how red"><span class="lamp"></span>빨간불<b>기다려</b></div>
+      <div class="how lime"><span class="lamp"></span>초록불<b>빨리 탭</b></div>
+      <div class="how blue"><span class="lamp"></span>파란불<b>속지 마</b></div>
     </div>
-    <div class="slot s1" id="startSlot">
-      <div class="name">▶ 게임 시작</div>
-      <div class="desc">라운드마다 제한시간이 짧아진다.<br>제한시간 안에 못 누르면 탈락. 몇 라운드까지 버티나.</div>
+    <div id="startSlot">
+      <div class="go">START</div>
+      <div class="desc">라운드마다 제한시간이 짧아진다<br>제한시간 안에 못 누르면 그대로 탈락</div>
     </div>
     <div class="homeBest" id="homeBest"></div>
   </div>
@@ -175,16 +170,15 @@
   <!-- 결과 -->
   <div class="screen" id="result">
     <div class="frame">
-      <div class="rankLabel">— 판정 결과 —</div>
-      <div class="tierName" id="tierName"></div>
+      <div class="tierChip" id="tierName"></div>
       <div class="score"><span id="scoreMain"></span><small id="scoreUnit"></small></div>
       <div class="pct" id="pct"></div>
       <div class="roast" id="roast"></div>
       <div id="verdict"></div>
       <input id="nick" maxlength="10" placeholder="이름을 넣어야 자랑이 완성된다">
-      <div id="nickWarn">↑ 이름부터! 누가 세운 기록인지 알려야지</div>
+      <div id="nickWarn">이름부터. 누가 세운 기록인지 알려야지</div>
       <button class="btn btn-y" id="shareBtn">도전장 보내기</button>
-      <button class="btn btn-p" id="bragBtn">기록 보내기</button>
+      <button class="btn btn-g" id="bragBtn">기록 보내기</button>
       <div id="copied">복사 완료 — 단톡방에 붙여넣으면 전쟁 시작</div>
       <button class="btn btn-g" id="retryBtn">한 판 더</button>
       <button class="btn btn-d" id="homeBtn">처음으로</button>
@@ -193,7 +187,8 @@
     <div id="adSlot"></div>
   </div>
 
-  <!-- 기록 카드 오버레이 -->
+  <footer>기록은 이 기기에만 저장 · 백분위는 성인 터치 반응 분포 추정치</footer>
+
   <div id="cardOverlay">
     <div class="cardBox">
       <img id="cardImg" alt="기록 카드">
@@ -201,22 +196,21 @@
       <button class="btn btn-d" id="cardClose">닫기</button>
     </div>
   </div>
-
-  <footer>기록은 이 기기에만 저장 · 백분위는 성인 터치 반응 분포 추정치</footer>
 </div>
 
 <script>
 (function(){
-  var $ = function(id){ return document.getElementById(id); };
+  var $=function(id){return document.getElementById(id);};
+  var NL=String.fromCharCode(10);
   var stage=$('stage'), stageTitle=$('stageTitle'), stageDesc=$('stageDesc');
   var screens={home:$('home'),game:$('game'),result:$('result')};
   function show(name){ for(var k in screens) screens[k].classList.toggle('on', k===name); }
 
-  var state='idle', timer=null, deadline=null, readyAt=0;
+  var state='idle', timer=null, deadline=null, pauseTimer=null, readyAt=0;
   var survived=0, limit=0, times=[];
   var SURV_START=600, SURV_STEP=30, SURV_MIN=180, FAKE_CHANCE=0.3;
 
-  // ---- 도전장 파싱 (서바이벌 라운드 기록) ----
+  // 도전장 파싱
   var q=new URLSearchParams(location.search), chal=null;
   var cV=parseInt(q.get('c'),10);
   if(!isNaN(cV) && cV>0 && cV<200 && q.get('m')==='s'){
@@ -226,12 +220,11 @@
     $('challengeBanner').style.display='block';
   }
 
-  // ---- 등급/멘트 ----
   var SURV_TIERS=[
-    {min:13,name:'오락실의 제왕',roasts:['기계가 당신을 두려워합니다.','이 기록은 좀 무섭습니다.']},
-    {min:9,name:'아케이드 고인물',roasts:['동전 하나로 하루 버티던 그 시절 실력.','반사신경에 세금을 매겨야 할 수준.']},
-    {min:5,name:'게이머',roasts:['나쁘지 않네요. 근데 친구는 몇 라운드일까요?','상위권이 눈앞입니다. 한 판 더.']},
-    {min:0,name:'연습생',roasts:['제한시간이 야속했나요? 다시 갑시다.','아직 몸이 덜 풀렸을 뿐입니다. 아마도.']}
+    {min:13,name:'미쳤다',roasts:['기계가 당신을 두려워합니다.','이 기록은 좀 무섭습니다.']},
+    {min:9,name:'고인물',roasts:['반사신경에 세금을 매겨야 할 수준.','친구들이 같이 하기 싫어하는 유형.']},
+    {min:5,name:'좀 치는데',roasts:['나쁘지 않네요. 근데 친구는 몇 라운드일까요?','상위권이 눈앞. 한 판 더.']},
+    {min:0,name:'몸 덜 풀림',roasts:['제한시간이 야속했나요? 다시 갑시다.','아직 예열 중이었을 뿐. 아마도.']}
   ];
   function survTierOf(n){for(var i=0;i<SURV_TIERS.length;i++)if(n>=SURV_TIERS[i].min)return SURV_TIERS[i];}
   function pick(a){return a[Math.floor(Math.random()*a.length)];}
@@ -240,28 +233,27 @@
     var p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
     var cdf=z>0?1-p:p; return Math.min(99,Math.max(0.1,cdf*100));
   }
+  function fmtPct(p){ return p<1?p.toFixed(1):Math.round(p); }
 
-  // ---- 저장 ----
   function store(k,v){try{localStorage.setItem(k,v);}catch(e){}}
   function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function renderHomeBest(){
     var s=load('bestSurv'), a=load('bestAvg');
-    $('homeBest').innerHTML='내 최고 기록: <b>'+(s?s+'라운드':'—')+'</b>'+(a?' · 평균 반응 <b>'+a+'ms</b>':'');
+    $('homeBest').innerHTML='내 최고 기록 <b>'+(s?s+'라운드':'—')+'</b>'+(a?' · 평균 반응 <b>'+a+'ms</b>':'');
   }
 
-  // ---- 라운드 ----
   function survRound(){
     state='waiting'; stage.className='waiting';
-    stageTitle.textContent='기다려…';
+    stageTitle.innerHTML='<span class="huge">기다려</span>';
     stageDesc.textContent='제한시간 '+limit+'ms 안에 눌러야 생존';
-    $('hudLeft').textContent='라운드 '+(survived+1);
+    $('hudLeft').textContent='ROUND '+(survived+1);
     $('hudRight').innerHTML='제한 <span class="val">'+limit+'ms</span>';
     var goGreen=function(){
       state='ready'; stage.className='ready';
       stageTitle.innerHTML='<span class="huge">지금!!</span>'; stageDesc.textContent='';
       readyAt=performance.now();
       deadline=setTimeout(function(){
-        if(state==='ready') survDie('시간 초과… '+limit+'ms는 넘길 수 없는 벽이었다');
+        if(state==='ready') survDie('시간 초과. '+limit+'ms는 넘을 수 없는 벽이었다');
       }, limit+40);
     };
     var wait=800+Math.random()*1800;
@@ -269,12 +261,12 @@
       timer=setTimeout(function(){
         if(state!=='waiting')return;
         state='fakeShow'; stage.className='fake';
-        stageTitle.textContent='아직이다!!';
-        stageDesc.textContent='파란불에 손대면 즉사.';
+        stageTitle.textContent='아직 아님!!';
+        stageDesc.textContent='파란불에 손대면 즉시 탈락';
         timer=setTimeout(function(){
           if(state!=='fakeShow')return;
           state='waiting'; stage.className='waiting';
-          stageTitle.textContent='기다려…'; stageDesc.textContent='잘 참았다.';
+          stageTitle.innerHTML='<span class="huge">기다려</span>'; stageDesc.textContent='잘 참았다';
           timer=setTimeout(goGreen, 400+Math.random()*1000);
         }, 550);
       }, wait*0.5);
@@ -284,7 +276,7 @@
   }
 
   function survDie(msg){
-    clearTimeout(timer); clearTimeout(deadline); state='dying';
+    clearTimeout(timer); clearTimeout(deadline); clearTimeout(pauseTimer); state='dying';
     var t=survTierOf(survived);
     var prev=parseInt(load('bestSurv'),10);
     if(isNaN(prev)||survived>prev) store('bestSurv',survived);
@@ -295,7 +287,7 @@
       if(isNaN(pa)||avg<pa) store('bestAvg',avg);
     }
     stage.className='waiting';
-    stageTitle.textContent='탈락!';
+    stageTitle.innerHTML='<span class="huge">탈락</span>';
     stageDesc.textContent=msg;
     setTimeout(function(){ survResult(msg,t,avg); }, 1300);
   }
@@ -308,19 +300,17 @@
       roast:pick(t.roasts)+(pctTxt?'<br>'+pctTxt:''),
       shareV:survived,
       shareText:function(nick,url){
-        return nick+', 서바이벌 '+survived+'라운드 생존 ('+t.name+')'+(avg?' · 평균 '+avg+'ms':'')+'\n나보다 오래 버티면 인정 → '+url;
+        return nick+', 서바이벌 '+survived+'라운드 생존 ('+t.name+')'+(avg?' · 평균 '+avg+'ms':'')+NL+'나보다 오래 버티면 인정 → '+url;
       },
       verdict: chal ? (survived>chal.v?'win':(survived<chal.v?'lose':'draw')) : null,
       verdictText: chal ? {
-        win:'승리! '+survived+' vs '+chal.v+'라운드 — '+chal.name+' 제압',
-        lose:'패배… '+survived+' vs '+chal.v+'라운드. 조용히 한 판 더.',
+        win:'승리. '+survived+' vs '+chal.v+'라운드 — '+chal.name+' 제압',
+        lose:'패배. '+survived+' vs '+chal.v+'라운드. 조용히 한 판 더.',
         draw:'무승부. 다시 가서 결판을 내자.'
       } : null
     });
   }
-  function fmtPct(p){ return p<1?p.toFixed(1):Math.round(p); }
 
-  // ---- 결과 표시 ----
   var shareCtx=null;
   function showResult(o){
     state='done'; show('result');
@@ -346,37 +336,39 @@
     return nick;
   }
 
-  // ---- 기록 카드 ----
   function drawCard(nick,o){
     var W=1000,H=1250,c=document.createElement('canvas');c.width=W;c.height=H;
     var x=c.getContext('2d');
-    var F=function(px,w){return (w||'')+' '+px+'px Galmuri11, "Apple SD Gothic Neo", sans-serif';};
-    x.fillStyle='#0a0a12';x.fillRect(0,0,W,H);
-    x.fillStyle='rgba(0,0,0,0.35)';
-    for(var y=0;y<H;y+=6)x.fillRect(0,y,W,2);
-    x.strokeStyle='#39ff88';x.lineWidth=6;x.strokeRect(30,30,W-60,H-60);
-    x.strokeStyle='rgba(57,255,136,0.35)';x.lineWidth=2;x.strokeRect(50,50,W-100,H-100);
+    var F=function(px,w){return (w||'')+' '+px+"px 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', sans-serif";};
+    x.fillStyle='#0b0d10';x.fillRect(0,0,W,H);
+    // 라임 라운드 사각 포인트
+    x.fillStyle='#c8ff2e';
+    x.beginPath();x.roundRect(60,60,120,120,32);x.fill();
+    x.fillStyle='#0b0d10';x.font=F(72,'900');x.textAlign='center';
+    x.fillText('⚡',120,148);
+    x.textAlign='left';
+    x.fillStyle='#f5f7f9';x.font=F(52,'900');
+    x.fillText('반응속도 서바이벌',220,138);
     x.textAlign='center';
-    x.fillStyle='#39ff88';x.font=F(52,'700');
-    x.fillText('반응속도 오락실',W/2,150);
-    x.fillStyle='#5f8a72';x.font=F(30);
-    x.fillText('— 판정 결과 —',W/2,215);
-    x.fillStyle='#eafff2';x.font=F(44,'700');
-    x.fillText(nick+'의 기록',W/2,320);
-    x.fillStyle='#ffe14d';x.font=F(76,'700');
-    x.shadowColor='rgba(255,225,77,0.6)';x.shadowBlur=24;
-    x.fillText(o.tier,W/2,480);
-    x.shadowBlur=0;
-    x.fillStyle='#ffffff';x.font=F(140,'700');
-    x.fillText(o.main+'',W/2,680);
-    x.fillStyle='#7d879f';x.font=F(44);
-    x.fillText(o.unit.trim(),W/2,750);
-    x.fillStyle='#39ff88';x.font=F(42,'700');
-    x.fillText(o.cardLine,W/2,860);
-    x.fillStyle='#ff3d81';x.font=F(38,'700');
-    x.fillText('이길 수 있으면 이겨보시지',W/2,990);
-    x.fillStyle='#6ee7ff';x.font=F(28);
-    x.fillText('sjidok750-creator.github.io/reaction-test',W/2,1120);
+    x.fillStyle='#7c8590';x.font=F(38,'600');
+    x.fillText(nick+'의 기록',W/2,330);
+    x.fillStyle='#f5f7f9';x.font=F(230,'900');
+    x.fillText(o.main+'',W/2,590);
+    x.fillStyle='#7c8590';x.font=F(46,'700');
+    x.fillText(o.unit.trim(),W/2,670);
+    // 등급 칩
+    x.font=F(52,'800');
+    var tw=x.measureText(o.tier).width;
+    x.fillStyle='rgba(200,255,46,0.14)';
+    x.beginPath();x.roundRect((W-tw)/2-44,730,tw+88,104,52);x.fill();
+    x.fillStyle='#c8ff2e';
+    x.fillText(o.tier,W/2,802);
+    x.fillStyle='#9aa3ad';x.font=F(40,'600');
+    x.fillText(o.cardLine,W/2,930);
+    x.fillStyle='#f5f7f9';x.font=F(44,'800');
+    x.fillText('이길 수 있으면 이겨보시지',W/2,1050);
+    x.fillStyle='#4dc9ff';x.font=F(30,'600');
+    x.fillText('sjidok750-creator.github.io/reaction-test',W/2,1140);
     return c;
   }
   $('bragBtn').addEventListener('click',function(){
@@ -388,7 +380,7 @@
       if(!blob)return;
       var file=new File([blob],'record.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
-        navigator.share({files:[file],text:'반응속도 오락실 — 이길 수 있으면 이겨보시지\nhttps://sjidok750-creator.github.io/reaction-test/'}).catch(function(){});
+        navigator.share({files:[file],text:'반응속도 서바이벌 — 이길 수 있으면 이겨보시지'+NL+'https://sjidok750-creator.github.io/reaction-test/'}).catch(function(){});
       }else{
         $('cardImg').src=c.toDataURL('image/png');
         $('cardOverlay').classList.add('on');
@@ -412,33 +404,35 @@
     }
   });
 
-  // ---- 입력 ----
+  // 입력: 성공 라운드 후에는 자동 진행 (탭하면 즉시 스킵)
   stage.addEventListener('pointerdown',function(){
-    if(state==='between'){ survRound(); return; }
-    if(state==='fakeShow'){ clearTimeout(timer); survDie('페이크에 당했다… 파란불은 함정이다'); return; }
-    if(state==='waiting'){ clearTimeout(timer); survDie('너무 성급했다… 초록불이 뜨기 전이었다'); return; }
+    if(state==='intro'){ survRound(); return; }
+    if(state==='pause'){ clearTimeout(pauseTimer); survRound(); return; }
+    if(state==='fakeShow'){ clearTimeout(timer); survDie('페이크에 당했다. 파란불은 함정이다'); return; }
+    if(state==='waiting'){ clearTimeout(timer); survDie('너무 성급했다. 초록불이 뜨기 전이었다'); return; }
     if(state==='ready'){
       var ms=Math.round(performance.now()-readyAt);
       clearTimeout(deadline);
       if(ms<=limit){
         times.push(ms);
         survived++; limit=Math.max(SURV_MIN, limit-SURV_STEP);
-        state='between'; stage.className='';
-        stageTitle.textContent=ms+'ms — 생존';
-        stageDesc.textContent='탭해서 다음 라운드. 제한시간은 '+limit+'ms로 줄어든다';
+        state='pause'; stage.className='';
+        stageTitle.innerHTML='<span class="huge ms">'+ms+'ms</span>';
+        stageDesc.textContent='생존. 다음 라운드 제한 '+limit+'ms';
+        pauseTimer=setTimeout(function(){ if(state==='pause') survRound(); }, 900);
       } else {
-        survDie(ms+'ms… '+limit+'ms 제한을 넘겼다');
+        survDie(ms+'ms. 제한 '+limit+'ms를 넘겼다');
       }
     }
   });
 
-  // ---- 시작/이동 ----
   function startGame(){
     survived=0; limit=SURV_START; times=[];
+    clearTimeout(timer); clearTimeout(deadline); clearTimeout(pauseTimer);
     $('hudLeft').textContent=''; $('hudRight').textContent='';
-    show('game'); state='between'; stage.className='';
-    stageTitle.textContent='준비됐나';
-    stageDesc.innerHTML='<b style="color:#ff3d81">빨간불</b> 기다려 → <b style="color:#39ff88">초록불</b> 빨리 탭! → <b style="color:#6ee7ff">파란불</b> 페이크, 참아<br>라운드마다 제한시간이 짧아진다<br><br>화면 아무 데나 탭하면 시작';
+    show('game'); state='intro'; stage.className='';
+    stageTitle.textContent='준비됐으면 탭';
+    stageDesc.innerHTML='<b style="color:#ff4d6d">빨간불</b> 기다려 → <b style="color:#c8ff2e">초록불</b> 빨리 탭 → <b style="color:#4dc9ff">파란불</b> 속지 마';
   }
   $('startSlot').addEventListener('click',startGame);
   $('retryBtn').addEventListener('click',startGame);
